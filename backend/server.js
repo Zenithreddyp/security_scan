@@ -4,6 +4,7 @@ import express from "express";
 
 import { router as authRoutes } from "./api/routes/auth.routes.js";
 import { router as userRoutes } from "./api/routes/user.routes.js";
+import { router as targetRoutes } from "./api/routes/target.routes.js";
 
 import pool from "./core/config/db.js";
 
@@ -20,6 +21,7 @@ app.get("/", async (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/scanweb", targetRoutes);
 
 
 const PORT = process.env.PORT || 5000;

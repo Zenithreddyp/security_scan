@@ -1,13 +1,20 @@
 import pool from "../config/db.js";
 
+import { v4 as uuidv4 } from 'uuid';
+
+
 export async function createUser(full_name, last_name, phoneno, email, password) {
+  
+  const id = uuidv4();
+
   const query = `
-    INSERT INTO users (full_name, last_name, phoneno, email, password)
-    VALUES ($1, $2, $3, $4, $5)
+    INSERT INTO users (id, full_name, last_name, phoneno, email, password)
+    VALUES ($1, $2, $3, $4, $5, $6)
     RETURNING id, full_name, last_name, phoneno, email, created_at
   `;
 
-  const values = [full_name, last_name, phoneno, email, password];
+  const values = [id, full_name, last_name, phoneno, email, password];
+
 
   const result = await pool.query(query, values);
   return result.rows[0];
