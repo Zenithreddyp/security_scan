@@ -20,7 +20,7 @@ export async function createUser(full_name, last_name, phoneno, email, password)
   return result.rows[0];
 }
 
-export async function findUserbyEmail(email) {
+export async function findUserByEmail(email) {
   const result = await pool.query(
     "SELECT * FROM users WHERE email = $1",
     [email]

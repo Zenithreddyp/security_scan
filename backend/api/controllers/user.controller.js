@@ -1,4 +1,6 @@
 import { updateUserPassword,findUserById } from "../../core/models/user.model.js";
+import bcrypt from "bcrypt";
+
 
 export async function getProfile(req, res) {
     try {

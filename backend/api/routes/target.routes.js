@@ -1,7 +1,9 @@
 import express from "express";
 import { authenticateToken } from "../middleware/auth.middleware.js";
-import { addtarget } from "../controllers/target.controller.js";
+import { createTarget, listTargets, updateTarget } from "../controllers/target.controller.js";
 
 export const router = express.Router();
 
-router.get("/addtarget", authenticateToken, addtarget);
+router.post("/addtarget", authenticateToken, createTarget);
+router.get("/alltargets", authenticateToken, listTargets);
+router.put("/target/:id", authenticateToken, updateTarget);

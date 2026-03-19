@@ -3,22 +3,19 @@ import jwt from "jsonwebtoken";
 
 import {
     createUser,
-    findUserbyEmail,
+    findUserByEmail,
     findUserById,
+    removeRefreshToken,
     saveRefreshToken,
 } from "../../core/models/user.model.js";
 
 const generateTokens = (userId) => {
-    const accessToken = jwt.sign(
-        { userId: userId },
-        process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: "1d" },
-    );
-    const refreshToken = jwt.sign(
-        { userId: userId },
-        process.env.REFRESH_TOKEN_SECRET,
-        { expiresIn: "7d" },
-    );
+    const accessToken = jwt.sign({ userId: userId }, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "1d",
+    });
+    const refreshToken = jwt.sign({ userId: userId }, process.env.REFRESH_TOKEN_SECRET, {
+        expiresIn: "7d",
+    });
     return { accessToken, refreshToken };
 };
 
@@ -26,7 +23,7 @@ export async function register(req, res) {
     try {
         const { full_name, last_name, phoneno, email, password } = req.body;
 
-        const existingUser = await findUserbyEmail(email);
+        const existingUser = await findUserByEmail(email);
 
         if (existingUser) {
             return res.status(400).json({ message: "User already exists" });
@@ -34,13 +31,7 @@ export async function register(req, res) {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const user = await createUser(
-            full_name,
-            last_name,
-            phoneno,
-            email,
-            hashedPassword,
-        );
+        const user = await createUser(full_name, last_name, phoneno, email, hashedPassword);
 
         const { accessToken, refreshToken } = generateTokens(user.id);
         await saveRefreshToken(user.id, refreshToken);
@@ -60,7 +51,7 @@ export async function login(req, res) {
     try {
         const { email, password } = req.body;
 
-        const user = await findUserbyEmail(email);
+        const user = await findUserByEmail(email);
 
         if (!user || !(await bcrypt.compare(password, user.password))) {
             return res.status(400).json({ message: "Invalid credentials" });
@@ -84,34 +75,19 @@ export async function refreshaccessToken(req, res) {
     try {
         const { token } = req.body;
 
-        if (!token)
-            return res.status(401).json({ message: "Refresh token required" });
+        if (!token) return res.status(401).json({ message: "Refresh token required" });
 
-        jwt.verify(
-            token,
-            process.env.REFRESH_TOKEN_SECRET,
-            async (err, decoded) => {
-                if (err)
-                    return res
-                        .status(403)
-                        .json({ message: "Invalid refresh token" });
+        const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
 
-                const user = await findUserById(decoded.userId);
-                if (!user || user.refresh_token !== token) {
-                    return res
-                        .status(403)
-                        .json({ message: "Refresh token revoked or invalid" });
-                }
+        const user = await findUserById(decoded.userId);
+        if (!user || user.refresh_token !== token) {
+            return res.status(403).json({ message: "Refresh token revoked or invalid" });
+        }
 
-                const accessToken = jwt.sign(
-                    { userId: user.id },
-                    process.env.ACCESS_TOKEN_SECRET,
-                    { expiresIn: "15m" },
-                );
-
-                res.json({ accessToken });
-            },
-        );
+        const accessToken = jwt.sign({ userId: user.id }, process.env.ACCESS_TOKEN_SECRET, {
+            expiresIn: "15m",
+        });
+        res.json({ accessToken });
     } catch (error) {
         res.status(500).json({ error: "Server error" });
     }
@@ -119,7 +95,7 @@ export async function refreshaccessToken(req, res) {
 
 export async function logout(req, res) {
     try {
-        const { userId } = req.body; // In a real app, get this from the access token middleware
+        const userId = req.user.userId;
         await removeRefreshToken(userId);
         res.json({ message: "Logged out successfully" });
     } catch (error) {
