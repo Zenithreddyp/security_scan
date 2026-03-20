@@ -1,5 +1,6 @@
 import { createScan, findScansByUser, findScansByTarget } from "../../core/models/scan.model.js";
 import { findTargetByUserAndId } from "../../core/models/target.model.js";
+import { AddScantoQueue } from "../../core/services/scan.service.js";
 import { findOrCreateTarget } from "../../core/services/target.service.js";
 
 export async function initiateScan(req, res) {
@@ -11,6 +12,16 @@ export async function initiateScan(req, res) {
         });
 
         const scan = await createScan(target.id, req.body.scan_type);
+
+        await AddScantoQueue({
+            scan: { id: scan.id, type: scan.scan_type },
+            target: {
+                id: target.id,
+                url: target.target_url,
+                ip: target.target_ip,
+            },
+        });
+        console.log("failed")
 
         res.json({
             message: "Scan added",

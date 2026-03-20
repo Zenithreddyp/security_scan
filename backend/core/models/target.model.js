@@ -41,7 +41,6 @@ export async function findTargetByUserAndId(user_id, id) {
 
 
 export async function createTarget(user_id, target_url, target_ip, label) {
-    // console.log(//print all//)
     console.log("createTarget inputs:", {
         user_id,
         target_url,

@@ -1,4 +1,4 @@
-import { findTargetsByUser, createTarget ,updateTargetLabel} from "../../core/models/target.model.js";
+import { findTargetsByUser ,updateTargetLabel} from "../../core/models/target.model.js";
 
 import dns from "dns/promises";
 import { parse } from "tldts";
