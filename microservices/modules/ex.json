@@ -1,0 +1,29 @@
+{
+    "san": [
+        "*.instagram.com",
+        "*.cdninstagram.com",
+        "*.igsonar.com",
+        "cdninstagram.com",
+        "igsonar.com",
+        "instagram.com"
+    ],
+    "error": null,
+    "issuer": {
+        "commonName": "DigiCert Global G2 TLS RSA SHA256 2020 CA1",
+        "countryName": "US",
+        "organizationName": "DigiCert Inc"
+    },
+    "subject": {
+        "commonName": "*.instagram.com",
+        "countryName": "US",
+        "localityName": "Menlo Park",
+        "organizationName": "Meta Platforms, Inc.",
+        "stateOrProvinceName": "California"
+    },
+    "hostname": "instagram.com",
+    "days_left": 8,
+    "valid_from": "2025-12-31T00:00:00+00:00",
+    "valid_until": "2026-03-31T23:59:59+00:00",
+    "serial_number": "075FFBB526EC4FC11FDBD13260CEC02F",
+    "signature_algorithm": "sha256WithRSAEncryption"
+}

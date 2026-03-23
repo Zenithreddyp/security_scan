@@ -5,6 +5,9 @@ from datetime import datetime, UTC
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 
+from config.db import add_finding
+from worker2 import addScantoResult
+
 
 def parse_name(field):
     """Convert certificate subject/issuer tuple into dict"""
@@ -15,7 +18,8 @@ def parse_name(field):
     return result
 
 
-def ssl_scan(hostname):
+
+def ssl_scan(scan_id, hostname):
     context = ssl.create_default_context()
 
     result = {
@@ -28,7 +32,7 @@ def ssl_scan(hostname):
         "days_left": None,
         "serial_number": None,
         "signature_algorithm": None,
-        "error": None
+        "error": None,
     }
 
     try:
@@ -37,42 +41,49 @@ def ssl_scan(hostname):
 
                 cert = ssock.getpeercert()
 
-                # Subject & Issuer
                 subject = parse_name(cert.get("subject", ()))
                 issuer = parse_name(cert.get("issuer", ()))
 
                 result["subject"] = subject
                 result["issuer"] = issuer
 
-                # SANs
                 san_list = cert.get("subjectAltName", [])
                 result["san"] = [x[1] for x in san_list]
 
-                # Dates (make timezone aware)
-                not_before = datetime.strptime(cert["notBefore"], "%b %d %H:%M:%S %Y %Z").replace(tzinfo=UTC)
-                not_after = datetime.strptime(cert["notAfter"], "%b %d %H:%M:%S %Y %Z").replace(tzinfo=UTC)
+                not_before = datetime.strptime(
+                    cert["notBefore"], "%b %d %H:%M:%S %Y %Z"
+                ).replace(tzinfo=UTC)
+                not_after = datetime.strptime(
+                    cert["notAfter"], "%b %d %H:%M:%S %Y %Z"
+                ).replace(tzinfo=UTC)
 
                 result["valid_from"] = not_before.isoformat()
                 result["valid_until"] = not_after.isoformat()
 
-                # Expiry
                 result["days_left"] = (not_after - datetime.now(UTC)).days
 
-                # Extra fields (may not always exist)
                 result["serial_number"] = cert.get("serialNumber")
-
                 der_cert = ssock.getpeercert(binary_form=True)
-
                 cert = x509.load_der_x509_certificate(der_cert, default_backend())
                 result["signature_algorithm"] = cert.signature_algorithm_oid._name
 
     except Exception as e:
         result["error"] = str(e)
 
-    return json.dumps(result, indent=4)
+    try:
+        finding_id = add_finding(scan_id, "TLS/SSL", result)
+        addScantoResult(
+            json.dumps(
+                {
+                    "scan_id": scan_id,
+                    "finding_id": finding_id,  
+                    "status": "completed" if result["error"] is None else "failed",
+                    "error": result["error"] or "",
+                }
+            )
+        )
 
-
-# Run
-# output = ssl_scan("cloudflare.com")
-
-# print(json.dumps(output, indent=4))
+    except Exception as e:
+        addScantoResult(
+            json.dumps({"scan_id": scan_id, "status": "failed", "error": str(e)})
+        )

@@ -21,7 +21,6 @@ export async function initiateScan(req, res) {
                 ip: target.target_ip,
             },
         });
-        console.log("failed")
 
         res.json({
             message: "Scan added",
