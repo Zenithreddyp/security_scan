@@ -21,7 +21,12 @@ export async function getProfile(req, res) {
             },
         });
     } catch (error) {
-        res.status(500).json({ message: "Server error" });
+        console.error(error);
+
+        res.status(500).json({
+            message: "Server error",
+            error: process.env.NODE_ENV === "development" ? error.message : undefined
+        });
     }
 }
 
@@ -57,6 +62,11 @@ export async function updatePassword(req, res) {
 
         res.json({ message: "Password updated successfully" });
     } catch (error) {
-        res.status(500).json({ message: "Server error" });
+        console.error(error);
+
+        res.status(500).json({
+            message: "Server error",
+            error: process.env.NODE_ENV === "development" ? error.message : undefined
+        });
     }
 }

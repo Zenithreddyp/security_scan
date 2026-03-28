@@ -4,7 +4,7 @@ from modules.domain.ssl_module import ssl_scan
 from messaging.producer import addScantoResult
 
 
-def handle_ssl_scan(scan_id, target):
+def handle_ssl_scan(scan_id, target, scan_level):
     hostname = target.get("url")
 
     update_scan_status(scan_id, "started")

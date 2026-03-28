@@ -10,20 +10,37 @@ export async function findTargetsByUser(user_id) {
     return result.rows;
 }
 
-export async function findTargetsByUserAndUrl(user_id, url) {
-    const result = await pool.query(
-        `
-        SELECT * 
-        FROM targets 
-        WHERE user_id = $1 
-          AND target_url = $2
-        ORDER BY created_at DESC
-        `,
-        [user_id, url]
-    );
+export async function findTargetsbyUserwithURLorIP(user_id, url, ip) {
+    let values = [user_id];
+    let conditions = [];
+    let index = 2;
 
+    if (url) {
+        conditions.push(`target_url = $${index++}`);
+        values.push(url);
+    }
+
+    if (ip) {
+        conditions.push(`target_ip = $${index++}`);
+        values.push(ip);
+    }
+
+    let query = `
+        SELECT *
+        FROM targets
+        WHERE user_id = $1
+    `;
+
+    if (conditions.length > 0) {
+        query += ` AND (${conditions.join(" OR ")})`;
+    }
+
+    query += ` ORDER BY created_at DESC`;
+
+    const result = await pool.query(query, values);
     return result.rows;
 }
+
 export async function findTargetByUserAndId(user_id, id) {
     const result = await pool.query(
         `
@@ -33,12 +50,11 @@ export async function findTargetByUserAndId(user_id, id) {
           AND id = $2
         ORDER BY created_at DESC
         `,
-        [user_id, id]
+        [user_id, id],
     );
 
     return result.rows[0];
 }
-
 
 export async function createTarget(user_id, target_url, target_ip, label) {
     console.log("createTarget inputs:", {
@@ -61,18 +77,17 @@ export async function createTarget(user_id, target_url, target_ip, label) {
         RETURNING *;
     `;
 
-    const values = [id, user_id, target_url, target_ip, label];
+    const values = [id, user_id, target_url || null, target_ip || null, label];
 
     const result = await pool.query(query, values);
 
     return result.rows[0];
 }
 
-
 export async function updateTargetLabel(id, user_id, label) {
     const result = await pool.query(
         `UPDATE targets SET label = $1 WHERE id = $2 AND user_id = $3 RETURNING *`,
-        [label, id, user_id]
+        [label, id, user_id],
     );
     return result.rows[0];
 }

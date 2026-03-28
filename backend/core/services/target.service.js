@@ -1,29 +1,26 @@
 import dns from "dns/promises";
 import { parse } from "tldts";
-import { createTarget, findTargetsByUserAndUrl } from "../models/target.model.js";
+import { createTarget, findTargetsbyUserwithURLorIP } from "../models/target.model.js";
 
 export async function findOrCreateTarget(user_id, data) {
     let finalUrl = data.target_url || null;
     let finalIp = data.target_ip || null;
 
-    if (finalIp && !finalUrl) {
-        try {
-            const hostnames = await dns.reverse(finalIp);
-            finalUrl = hostnames[0] || null;
-        } catch (error) {
-            console.error("DNS Reverse Lookup failed:", error.message);
-        }
-    }
-
     if (!finalUrl && !finalIp) {
         throw new Error("Either target_ip or target_url is required");
     }
 
+    let parsedfinalUrl = null;
+
     if (finalUrl) {
         finalUrl = finalUrl.trim().toLowerCase();
+
+        parsedfinalUrl = finalUrl.replace(/^https?:\/\//, "");
+        parsedfinalUrl = parsedfinalUrl.replace(/^www\./, "");
+        parsedfinalUrl = parsedfinalUrl.replace(/\/$/, "");
     }
 
-    const existing = await findTargetsByUserAndUrl(user_id, finalUrl);
+    const existing = await findTargetsbyUserwithURLorIP(user_id, parsedfinalUrl, finalIp);
 
     if (existing.length > 0) {
         return existing[0];
@@ -41,5 +38,5 @@ export async function findOrCreateTarget(user_id, data) {
         if (parsed.subdomain) label.push(parsed.subdomain);
     }
 
-    return await createTarget(user_id, finalUrl, finalIp, label);
+    return await createTarget(user_id, parsedfinalUrl, finalIp, label);
 }

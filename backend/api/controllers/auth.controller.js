@@ -43,7 +43,12 @@ export async function register(req, res) {
             user: { id: user.id, email: user.email },
         });
     } catch (error) {
-        res.status(500).json({ error: "Server error" });
+        console.error(error);
+
+        res.status(500).json({
+            message: "Server error",
+            error: process.env.NODE_ENV === "development" ? error.message : undefined
+        });
     }
 }
 
@@ -67,7 +72,12 @@ export async function login(req, res) {
             user: { id: user.id, email: user.email },
         });
     } catch (error) {
-        res.status(500).json({ error: "Server error" });
+        console.error(error);
+
+        res.status(500).json({
+            message: "Server error",
+            error: process.env.NODE_ENV === "development" ? error.message : undefined
+        });
     }
 }
 
@@ -89,7 +99,12 @@ export async function refreshaccessToken(req, res) {
         });
         res.json({ accessToken });
     } catch (error) {
-        res.status(500).json({ error: "Server error" });
+        console.error(error);
+
+        res.status(500).json({
+            message: "Server error",
+            error: process.env.NODE_ENV === "development" ? error.message : undefined
+        });
     }
 }
 
@@ -99,6 +114,11 @@ export async function logout(req, res) {
         await removeRefreshToken(userId);
         res.json({ message: "Logged out successfully" });
     } catch (error) {
-        res.status(500).json({ error: "Server error" });
+        console.error(error);
+
+        res.status(500).json({
+            message: "Server error",
+            error: process.env.NODE_ENV === "development" ? error.message : undefined
+        });
     }
 }

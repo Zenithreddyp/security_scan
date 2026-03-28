@@ -2,15 +2,40 @@ import { createScan, findScansByUser, findScansByTarget } from "../../core/model
 import { findTargetByUserAndId } from "../../core/models/target.model.js";
 import { AddScantoQueue } from "../../core/services/scan.service.js";
 import { findOrCreateTarget } from "../../core/services/target.service.js";
+import net from "node:net";
 
 export async function initiateScan(req, res) {
     try {
         const user_id = req.user.userId;
 
-        const target = await findOrCreateTarget(user_id, {
-            target_url: req.body.scan_url,
-        });
-
+        const body_target = req.body.target;
+        
+        if (!body_target) {
+            res.status(400).json({ message: "Target not provided" });
+            return;
+        }
+        console.log(body_target);
+        
+        // const ippatern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.(?!$)|$){4}$/;
+        const domainPattern = /^(?!-)([A-Za-z0-9-]{1,63}\.)+[A-Za-z]{2,}$/;
+        
+        let target;
+        
+        if (net.isIP(body_target)) {
+            console.log(body_target);
+            target = await findOrCreateTarget(user_id, {
+                target_ip: body_target,
+            });
+        } else if (domainPattern.test(body_target)) {
+            target = await findOrCreateTarget(user_id, {
+                target_url: body_target,
+            });
+        } else {
+            res.status(400).json({ message: "Provided Target is neither a domain nor an IP" ,"wtthere":target});
+            return;
+        }
+        
+        
         const scan = await createScan(target.id, req.body.scan_type);
 
         await AddScantoQueue({
@@ -28,7 +53,12 @@ export async function initiateScan(req, res) {
             scan,
         });
     } catch (error) {
-        res.status(500).json({ message: "Server error" });
+        console.error(error);
+
+        res.status(500).json({
+            message: "Server error",
+            error: process.env.NODE_ENV === "development" ? error.message : undefined
+        });
     }
 }
 
@@ -42,7 +72,12 @@ export async function listScans(req, res) {
             scans,
         });
     } catch (error) {
-        res.status(500).json({ message: "Server error", error: error.message });
+        console.error(error);
+
+        res.status(500).json({
+            message: "Server error",
+            error: process.env.NODE_ENV === "development" ? error.message : undefined
+        });
     }
 }
 
@@ -61,6 +96,11 @@ export async function listScansByTarget(req, res) {
             scans,
         });
     } catch (error) {
-        res.status(500).json({ message: "Server error" });
+        console.error(error);
+
+        res.status(500).json({
+            message: "Server error",
+            error: process.env.NODE_ENV === "development" ? error.message : undefined
+        });
     }
 }
