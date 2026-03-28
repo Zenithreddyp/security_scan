@@ -1,4 +1,4 @@
-import { findTargetsByUser, createTarget ,updateTargetLabel} from "../../core/models/target.model.js";
+import { findTargetsByUser ,updateTargetLabel} from "../../core/models/target.model.js";
 
 import dns from "dns/promises";
 import { parse } from "tldts";
@@ -14,7 +14,12 @@ export async function listTargets(req, res) {
             targets: targets,
         });
     } catch (error) {
-        res.status(500).json({ message: "Server error" });
+        console.error(error);
+
+        res.status(500).json({
+            message: "Server error",
+            error: process.env.NODE_ENV === "development" ? error.message : undefined
+        });
     }
 }
 
@@ -28,7 +33,12 @@ export async function createTarget(req, res) {
             target,
         });
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        console.error(error);
+
+        res.status(400).json({
+            message: error.message,
+            error: process.env.NODE_ENV === "development" ? error.message : undefined
+        });
     }
 }
 
@@ -56,7 +66,11 @@ export async function updateTarget(req, res) {
             target: updatedTarget 
         });
     } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: "Server error" });
+        console.error(error);
+
+        res.status(500).json({
+            message: "Server error",
+            error: process.env.NODE_ENV === "development" ? error.message : undefined
+        });
     }
 }
