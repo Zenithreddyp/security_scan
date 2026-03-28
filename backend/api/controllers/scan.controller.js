@@ -9,24 +9,48 @@ export async function initiateScan(req, res) {
         const user_id = req.user.userId;
 
         const body_target = req.body.target;
+        const scan_type = req.body.scan_type;
         
         if (!body_target) {
             res.status(400).json({ message: "Target not provided" });
             return;
         }
-        console.log(body_target);
-        
+
+        if (!scan_type) {
+            res.status(400).json({ message: "Scan type not provided" });
+            return;
+        }
+
+        console.log("Target:", body_target, "| Scan Type:", scan_type);        
+
         // const ippatern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.(?!$)|$){4}$/;
         const domainPattern = /^(?!-)([A-Za-z0-9-]{1,63}\.)+[A-Za-z]{2,}$/;
         
         let target;
         
         if (net.isIP(body_target)) {
-            console.log(body_target);
+            const allowedIpScans = ["recon", "port"];
+
+            if (!allowedIpScans.includes(scan_type)) {
+                res.status(400).json({ 
+                    message: `Invalid scan type '${scan_type}' for an IP target. Allowed scans: ${allowedIpScans.join(', ')}` 
+                });
+                return;
+            }
+
             target = await findOrCreateTarget(user_id, {
                 target_ip: body_target,
             });
         } else if (domainPattern.test(body_target)) {
+            const allowedDomainScans = ["ssl", "port"];
+
+            if (!allowedDomainScans.includes(scan_type)) {
+                res.status(400).json({ 
+                    message: `Invalid scan type '${scan_type}' for a Domain target. Allowed scans: ${allowedDomainScans.join(', ')}` 
+                });
+                return;
+            }
+            
             target = await findOrCreateTarget(user_id, {
                 target_url: body_target,
             });
