@@ -8,9 +8,9 @@ export async function initiateScan(req, res) {
     try {
         const user_id = req.user.userId;
 
-        const body_target = req.body.target;
-        const scan_type = req.body.scan_type;
-        
+        const { target: body_target, scan_type, protocol, port_range } = req.body;
+
+
         if (!body_target) {
             res.status(400).json({ message: "Target not provided" });
             return;
@@ -21,19 +21,19 @@ export async function initiateScan(req, res) {
             return;
         }
 
-        console.log("Target:", body_target, "| Scan Type:", scan_type);        
+        console.log("Target:", body_target, "| Scan Type:", scan_type);
 
         // const ippatern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.(?!$)|$){4}$/;
         const domainPattern = /^(?!-)([A-Za-z0-9-]{1,63}\.)+[A-Za-z]{2,}$/;
-        
+
         let target;
-        
+
         if (net.isIP(body_target)) {
-            const allowedIpScans = ["recon", "port"];
+            const allowedIpScans = ["recon", "IP_PORT_SCAN"];
 
             if (!allowedIpScans.includes(scan_type)) {
-                res.status(400).json({ 
-                    message: `Invalid scan type '${scan_type}' for an IP target. Allowed scans: ${allowedIpScans.join(', ')}` 
+                res.status(400).json({
+                    message: `Invalid scan type '${scan_type}' for an IP target. Allowed scans: ${allowedIpScans.join(", ")}`,
                 });
                 return;
             }
@@ -45,25 +45,27 @@ export async function initiateScan(req, res) {
             const allowedDomainScans = ["ssl", "port"];
 
             if (!allowedDomainScans.includes(scan_type)) {
-                res.status(400).json({ 
-                    message: `Invalid scan type '${scan_type}' for a Domain target. Allowed scans: ${allowedDomainScans.join(', ')}` 
+                res.status(400).json({
+                    message: `Invalid scan type '${scan_type}' for a Domain target. Allowed scans: ${allowedDomainScans.join(", ")}`,
                 });
                 return;
             }
-            
+
             target = await findOrCreateTarget(user_id, {
                 target_url: body_target,
             });
         } else {
-            res.status(400).json({ message: "Provided Target is neither a domain nor an IP" ,"wtthere":target});
+            res.status(400).json({
+                message: "Provided Target is neither a domain nor an IP",
+                wtthere: target,
+            });
             return;
         }
-        
-        
-        const scan = await createScan(target.id, req.body.scan_type);
+
+        const scan = await createScan(target.id, scan_type);
 
         await AddScantoQueue({
-            scan: { id: scan.id, type: scan.scan_type },
+            scan: { id: scan.id, type: scan.scan_type, protocol: protocol, port_range: port_range },
             target: {
                 id: target.id,
                 url: target.target_url,
@@ -81,7 +83,7 @@ export async function initiateScan(req, res) {
 
         res.status(500).json({
             message: "Server error",
-            error: process.env.NODE_ENV === "development" ? error.message : undefined
+            error: process.env.NODE_ENV === "development" ? error.message : undefined,
         });
     }
 }
@@ -100,7 +102,7 @@ export async function listScans(req, res) {
 
         res.status(500).json({
             message: "Server error",
-            error: process.env.NODE_ENV === "development" ? error.message : undefined
+            error: process.env.NODE_ENV === "development" ? error.message : undefined,
         });
     }
 }
@@ -124,7 +126,7 @@ export async function listScansByTarget(req, res) {
 
         res.status(500).json({
             message: "Server error",
-            error: process.env.NODE_ENV === "development" ? error.message : undefined
+            error: process.env.NODE_ENV === "development" ? error.message : undefined,
         });
     }
 }

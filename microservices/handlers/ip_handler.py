@@ -5,7 +5,7 @@ from messaging.producer import addScantoResult
 from modules.ip.port_module import port_scan
 
 
-def handle_ip_ssl_scan(scan_id, target, scan_type):
+def handle_ip_ssl_scan(scan_id, target, **kwargs):
 
     ip = target.get("ip")
     update_scan_status(scan_id, "started")
@@ -35,16 +35,17 @@ def handle_ip_ssl_scan(scan_id, target, scan_type):
         update_scan_status(scan_id, "failed")
 
 
-def handel_ip_port_scan(scan_id, target, scan_level):
-    scan_level=3
+def handel_ip_port_scan(scan_id, target, **kwargs):
     ip = target.get("ip")
+    protocol=kwargs.get("protocol") or "TCP"
+    port_range=kwargs.get("port_range") or "basic"
 
     update_scan_status(scan_id, "started")
 
-    result = port_scan(ip,scan_level)
+    result = port_scan(ip,protocol,port_range)
 
     try:
-        finding_id = add_finding(scan_id, f"TCPscan{scan_level}", result)
+        finding_id = add_finding(scan_id, f"{protocol.upper()} scan, range {port_range}", result)
 
         payload = json.dumps(
             {

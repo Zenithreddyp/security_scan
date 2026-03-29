@@ -162,50 +162,78 @@ EXTENDED_PORTS = sorted(
     )
 )
 
-FULL_SCAN = range(1, 10536)
 
 
-def single_scan_port(ip, port, open_ports, lock):
+def single_scan_port(ip, port, protocol, open_ports, lock):
+    is_open = False
+    s = None
+    
     try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(1)
+        if protocol.lower() == "udp":
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.settimeout(2)  
+            
+            try:
+                s.sendto(b'\x00', (ip, port))
+                s.recvfrom(1024)
+                is_open = True
+            except socket.timeout:
+                # In basic UDP scanning, a timeout often means the port is open|filtered
+                is_open = True
+            except ConnectionResetError:
+                # ICMP Port Unreachable means closed
+                is_open = False
+            except Exception:
+                is_open = False
+                
+        else:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(1)
+            if s.connect_ex((ip, port)) == 0:
+                is_open = True
 
-        if s.connect_ex((ip, port)) == 0:
-            if lock:
+        if is_open:
+            with lock:
                 open_ports.append(port)
 
-        s.close()
-    except:
+    except Exception:
         pass
+    finally:
+        if s:
+            try:
+                s.close()
+            except:
+                pass
 
 
-def port_scan(ip, level=1):
-    print("started")
+def port_scan(ip, protocol, port_range):
+    print(f"Started {protocol.upper()} scan on {ip} for {port_range} ports")
     socket.setdefaulttimeout(1)
-    # result = {}
+    
     open_ports = []
-
     lock = Lock()
 
     try:
-
-        if level == 1:
-            ports = BASIC_PORTS  # default
-        elif level == 2:
-            ports = EXTENDED_PORTS
-        elif level == 3:
-            ports = FULL_SCAN
-        else:
+        if port_range == "basic":
             ports = BASIC_PORTS
+        elif port_range == "extended":
+            ports = EXTENDED_PORTS
+        elif port_range == "all":
+            ports = range(1, 65536) 
+        else:
+            ports = BASIC_PORTS 
 
-        with ThreadPoolExecutor(max_workers=100) as executor:
+        workers = 500 if port_range == "all" else 100
+
+        with ThreadPoolExecutor(max_workers=workers) as executor:
             for port in ports:
-                executor.submit(single_scan_port, ip, port, open_ports, lock)
+                executor.submit(single_scan_port, ip, port, protocol, open_ports, lock)
 
         return {
             "open_ports": sorted(open_ports),
             "total_open": len(open_ports),
-            "scan_level": level,
+            "protocol": protocol,
+            "port_range": port_range,
             "error": None,
         }
 
