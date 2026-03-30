@@ -29,11 +29,11 @@ export async function initiateScan(req, res) {
         let target;
 
         if (net.isIP(body_target)) {
-            const allowedIpScans = ["recon", "IP_PORT_SCAN"];
+            const allowedIpScans = ["IP_RECON", "IP_PORT_SCAN"];
 
             if (!allowedIpScans.includes(scan_type)) {
                 res.status(400).json({
-                    message: `Invalid scan type '${scan_type}' for an IP target. Allowed scans: ${allowedIpScans.join(", ")}`,
+                    message: `Invalid scan type '${scan_type}' for an IP target. Allowed scans: ${allowedIpScans.join(",")}`,
                 });
                 return;
             }
@@ -42,11 +42,11 @@ export async function initiateScan(req, res) {
                 target_ip: body_target,
             });
         } else if (domainPattern.test(body_target)) {
-            const allowedDomainScans = ["ssl", "port"];
+            const allowedDomainScans = ["SSL/TLS", "IP_PORT_SCAN"];
 
             if (!allowedDomainScans.includes(scan_type)) {
                 res.status(400).json({
-                    message: `Invalid scan type '${scan_type}' for a Domain target. Allowed scans: ${allowedDomainScans.join(", ")}`,
+                    message: `Invalid scan type '${scan_type}' for a Domain target. Allowed scans: ${allowedDomainScans.join(",")}`,
                 });
                 return;
             }

@@ -35,8 +35,8 @@ def handle_ip_ssl_scan(scan_id, target, **kwargs):
         update_scan_status(scan_id, "failed")
 
 
-def handel_ip_port_scan(scan_id, target, **kwargs):
-    ip = target.get("ip")
+def handle_ip_port_scan(scan_id, target, **kwargs):
+    ip = target.get("ip") or target.get("url") #becoz target can be an ip or an url
     protocol=kwargs.get("protocol") or "TCP"
     port_range=kwargs.get("port_range") or "basic"
 
