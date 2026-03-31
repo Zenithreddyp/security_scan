@@ -239,3 +239,6 @@ def port_scan(ip, protocol, port_range):
 
     except Exception as e:
         return {"open_ports": [], "error": str(e)}
+    
+
+print(port_scan("45.33.32.156","tcp","all"))
