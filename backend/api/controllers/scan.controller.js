@@ -7,6 +7,7 @@ import net from "node:net";
 export async function initiateScan(req, res) {
     try {
         const user_id = req.user.userId;
+        console.log("hello ruinning")
 
         const { target: body_target, scan_type, protocol, port_range } = req.body;
 

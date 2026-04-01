@@ -2,10 +2,11 @@ import jwt from "jsonwebtoken"
 
 export function authenticateToken(req, res, next) {
 
+    console.log("Headers:", req.headers);
     const authHeader = req.headers["authorization"];
 
     if (!authHeader) {
-        return res.status(401).json({ message: "Token missing" });
+        return res.status(401).json({ message: "Token missingnbj" });
     }
 
     const token = authHeader.split(" ")[1];
