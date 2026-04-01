@@ -214,7 +214,7 @@ class NmapWrapper():
 
 
 # usage
-nmap = NmapWrapper()
-print(nmap.run("178.16.137.95"))
+# nmap = NmapWrapper()
+# print(nmap.run("178.16.137.95"))
 # import os
 # print(os.environ["PATH"])

@@ -1,6 +1,6 @@
 import os
 import sys
-from core.messaging import start_consuming
+from core.messaging.consumer import start_consuming
 
 if __name__ == "__main__":
     try:

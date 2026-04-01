@@ -1,7 +1,7 @@
 import json
 from core.db import update_scan_status, add_finding
 from engines.custom.ssl_engine import SSLEngine
-from core.messaging import addScantoResult
+from core.messaging.producer import addScantoResult
 
 
 def handle_ssl_scan(scan_id, target, **kwargs):

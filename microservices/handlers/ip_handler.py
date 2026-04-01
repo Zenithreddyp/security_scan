@@ -1,7 +1,7 @@
 import json
 from core.db import update_scan_status, add_finding
 from engines.custom.recon_engine import ReconEngine
-from core.messaging import addScantoResult
+from core.messaging.producer import addScantoResult
 from engines.wrappers.nmap_wrapper import NmapWrapper
 
 

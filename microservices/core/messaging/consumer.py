@@ -13,14 +13,17 @@ SCAN_ROUTER = {
     # "FULL_IP": handle_full_ip_flow,
 }
 
-#pika in not thread safe so channel and connections must be touched from same thread that created them
+
+# pika in not thread safe so channel and connections must be touched from same thread that created them
 def ack_message(channel, delivery_tag):
     if channel.is_open:
         channel.basic_ack(delivery_tag)
 
+
 def nack_message(channel, delivery_tag):
     if channel.is_open:
         channel.basic_nack(delivery_tag, requeue=False)
+
 
 def process_scan_job(connection, channel, delivery_tag, body):
     try:
@@ -85,25 +88,3 @@ def start_consuming():
     channel.basic_consume(queue="scans", auto_ack=False, on_message_callback=callback)
     print("Waiting for messages...")
     channel.start_consuming()
-
-
-
-
-
-
-def addScantoResult(payload):
-    connection = pika.BlockingConnection(
-        pika.ConnectionParameters("localhost")
-    )
-    channel = connection.channel()
-
-    channel.queue_declare(queue="scan_results", durable=True)
-
-
-    channel.basic_publish(
-        exchange="",
-        routing_key="scan_results",
-        body=payload
-    )
-
-    connection.close()
