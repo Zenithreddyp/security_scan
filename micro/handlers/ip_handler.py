@@ -1,8 +1,8 @@
 import json
-from core.db import update_scan_status, add_finding
-from engines.custom.recon_engine import ReconEngine
-from core.messaging.producer import addScantoResult
-from engines.wrappers.nmap_wrapper import NmapWrapper
+from config.db import update_scan_status, add_finding
+from modules.ip.recon_module import recon_scan
+from messaging.producer import addScantoResult
+from modules.ip.port_module import port_scan
 
 
 def handle_ip_ssl_scan(scan_id, target, **kwargs):
@@ -10,7 +10,7 @@ def handle_ip_ssl_scan(scan_id, target, **kwargs):
     ip = target.get("ip")
     update_scan_status(scan_id, "started")
 
-    result = ReconEngine().run(ip)
+    result = recon_scan(ip)
 
     try:
         finding_id = add_finding(scan_id, "Basic Recon and Intelligence", result)
@@ -42,7 +42,7 @@ def handle_ip_port_scan(scan_id, target, **kwargs):
 
     update_scan_status(scan_id, "started")
 
-    result = NmapWrapper().run(ip, port_range=port_range)
+    result = port_scan(ip,protocol,port_range)
 
     try:
         finding_id = add_finding(scan_id, f"{protocol.upper()} scan, range {port_range}", result)

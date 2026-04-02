@@ -1,7 +1,7 @@
 import json
-from core.db import update_scan_status, add_finding
-from engines.custom.ssl_engine import SSLEngine
-from core.messaging.producer import addScantoResult
+from config.db import update_scan_status, add_finding
+from modules.domain.ssl_module import ssl_scan
+from messaging.producer import addScantoResult
 
 
 def handle_ssl_scan(scan_id, target, **kwargs):
@@ -9,7 +9,7 @@ def handle_ssl_scan(scan_id, target, **kwargs):
 
     update_scan_status(scan_id, "started")
 
-    result = SSLEngine().run(hostname)
+    result = ssl_scan(hostname)
 
     try:
         finding_id = add_finding(scan_id, "SSL/TLS", result)

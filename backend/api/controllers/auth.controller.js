@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import {getCookie} from "../helper.js"
 
 import {
     createUser,
@@ -36,10 +37,16 @@ export async function register(req, res) {
         const { accessToken, refreshToken } = generateTokens(user.id);
         await saveRefreshToken(user.id, refreshToken);
 
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
+
         res.json({
-            message: "User registered",
+            message: "Login successful",
             accessToken,
-            refreshToken,
             user: { id: user.id, email: user.email },
         });
     } catch (error) {
@@ -47,7 +54,7 @@ export async function register(req, res) {
 
         res.status(500).json({
             message: "Server error",
-            error: process.env.NODE_ENV === "development" ? error.message : undefined
+            error: process.env.NODE_ENV === "development" ? error.message : undefined,
         });
     }
 }
@@ -65,10 +72,15 @@ export async function login(req, res) {
         const { accessToken, refreshToken } = generateTokens(user.id);
         await saveRefreshToken(user.id, refreshToken);
 
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
         res.json({
             message: "Login successful",
             accessToken,
-            refreshToken,
             user: { id: user.id, email: user.email },
         });
     } catch (error) {
@@ -76,14 +88,15 @@ export async function login(req, res) {
 
         res.status(500).json({
             message: "Server error",
-            error: process.env.NODE_ENV === "development" ? error.message : undefined
+            error: process.env.NODE_ENV === "development" ? error.message : undefined,
         });
     }
 }
 
 export async function refreshaccessToken(req, res) {
     try {
-        const { token } = req.body;
+        const cookieHeader = req.headers.cookie;
+        const token = getCookie(cookieHeader, "refreshToken");
 
         if (!token) return res.status(401).json({ message: "Refresh token required" });
 
@@ -103,7 +116,7 @@ export async function refreshaccessToken(req, res) {
 
         res.status(500).json({
             message: "Server error",
-            error: process.env.NODE_ENV === "development" ? error.message : undefined
+            error: process.env.NODE_ENV === "development" ? error.message : undefined,
         });
     }
 }
@@ -112,13 +125,10 @@ export async function logout(req, res) {
     try {
         const userId = req.user.userId;
         await removeRefreshToken(userId);
+        res.clearCookie("refreshToken");
         res.json({ message: "Logged out successfully" });
     } catch (error) {
         console.error(error);
-
-        res.status(500).json({
-            message: "Server error",
-            error: process.env.NODE_ENV === "development" ? error.message : undefined
-        });
+        res.status(500).json({ message: "Server error" });
     }
 }
