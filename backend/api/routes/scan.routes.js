@@ -4,6 +4,7 @@ import {
     initiateScan,
     listScans,
     listScansByTarget,
+    getScanDetails
 } from "../controllers/scan.controller.js";
 
 export const router = express.Router();
@@ -12,3 +13,4 @@ router.post("/addscan", authenticateToken, initiateScan);
 router.get("/scans", authenticateToken, listScans);
 
 router.get("/scans/:target_id", authenticateToken, listScansByTarget);
+router.get("/details/:id", authenticateToken, getScanDetails);

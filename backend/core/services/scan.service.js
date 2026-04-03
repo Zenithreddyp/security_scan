@@ -1,5 +1,6 @@
 import amqp from "amqplib";
-import { updateScanStatus } from "../models/scan.model.js";
+import { updateScanStatus, findUserIdByScanId, findScanById } from "../models/scan.model.js";
+import { getIo, userSockets } from "../config/socket.js";
 // import { updateScanStatus } from "../models/scan.model";
 
 export async function AddScantoQueue(payload) {
@@ -45,10 +46,24 @@ export async function ConsumeScanResults() {
                     const payload = JSON.parse(msg.content.toString());
                     console.log("Received from Python:", payload);
 
-                    if (!payload.error) {
-                        updateScanStatus(payload.scan_id,payload.status)
-                    } else {
-                        updateScanStatus(payload.scan_id,"failed")
+                    const status = payload.error ? "failed" : (payload.status || "completed");
+                    await updateScanStatus(payload.scan_id, status);
+
+                    try {
+                        const userId = await findUserIdByScanId(payload.scan_id);
+                        const scanDetails = await findScanById(payload.scan_id);
+                        if (userId) {
+                            const userSocketId = userSockets.get(userId.toString());
+                            if (userSocketId) {
+                                getIo().to(userSocketId).emit("scan_completed", {
+                                    scan_id: payload.scan_id,
+                                    status: status,
+                                    results: scanDetails.results || payload.results // Include results depending on how the backend stores it
+                                });
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Socket emit error:", e);
                     }
 
                     channel.ack(msg);

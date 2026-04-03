@@ -2,41 +2,56 @@ import React from 'react';
 import { Radio } from 'lucide-react';
 
 export default function PortScanResult({ data }) {
-  // data.ports should be an array of { port, protocol, state, service }
-  const ports = data?.ports || data?.openPorts || [];
-  const summary = data?.summary || null;
+  // If no data is passed at all, or if it's an empty array, render nothing safely
+  if (!data || (Array.isArray(data) && data.length === 0)) return null;
+
+  // THE FIX: If `data` is an array (which `data.findings` is), grab the first item. 
+  // If it's already an object, just use it as-is.
+  const scanItem = Array.isArray(data) ? data[0] : data;
+
+  // 1. Extract exactly what your JSON provides from the finding object
+  const title = scanItem.title || 'Port Scan Results';
+  const rawData = scanItem.raw_data || {};
+  
+  // Look specifically for raw_data.open_ports
+  const ports = Array.isArray(rawData.open_ports) ? rawData.open_ports : [];
+  const totalOpen = rawData.total_open || ports.length;
+  
+  // Protocol is at the raw_data level in your JSON
+  const protocol = rawData.protocol ? String(rawData.protocol).toUpperCase() : 'TCP';
 
   return (
     <div className="result-card card-port">
       <div className="card-header">
         <div className="card-title">
           <Radio size={16} className="text-warning" />
-          <span>Port Scan Results</span>
+          <span>{title}</span>
         </div>
         <span className="card-status-badge warning">
-          {Array.isArray(ports) ? ports.length : 0} ports found
+          {totalOpen} ports found
         </span>
       </div>
 
-      {summary && (
-        <div className="card-content" style={{ marginBottom: '1rem' }}>
-          {typeof summary === 'string' ? (
-            <div className="data-row">
-              <span className="data-label">Summary</span>
-              <span className="data-value">{summary}</span>
-            </div>
-          ) : (
-            Object.entries(summary).map(([k, v]) => (
-              <div className="data-row" key={k}>
-                <span className="data-label">{k}</span>
-                <span className="data-value">{String(v)}</span>
-              </div>
-            ))
-          )}
+      {/* Summary Section based on your JSON's root properties */}
+      <div className="card-content" style={{ marginBottom: '1rem' }}>
+        <div className="data-row">
+          <span className="data-label">Scan ID</span>
+          <span className="data-value">{scanItem.scan_id || '—'}</span>
         </div>
-      )}
+        <div className="data-row">
+          <span className="data-label">Port Range</span>
+          <span className="data-value">{rawData.port_range || '—'}</span>
+        </div>
+        <div className="data-row">
+          <span className="data-label">Date</span>
+          <span className="data-value">
+            {scanItem.created_at ? new Date(scanItem.created_at).toLocaleString() : '—'}
+          </span>
+        </div>
+      </div>
 
-      {Array.isArray(ports) && ports.length > 0 ? (
+      {/* Ports Table Section */}
+      {ports.length > 0 ? (
         <table className="port-table">
           <thead>
             <tr>
@@ -47,33 +62,32 @@ export default function PortScanResult({ data }) {
             </tr>
           </thead>
           <tbody>
-            {ports.map((p, i) => (
-              <tr key={i}>
-                <td>{p.port || p.Port || '—'}</td>
-                <td>{p.protocol || p.Protocol || 'TCP'}</td>
-                <td>
-                  <span className="port-status">
-                    <span className={`port-status-dot ${(p.state || p.State || 'open').toLowerCase()}`} />
-                    {p.state || p.State || 'open'}
-                  </span>
-                </td>
-                <td>{p.service || p.Service || '—'}</td>
-              </tr>
-            ))}
+            {ports.map((p, i) => {
+              // Safety check for malformed array items
+              if (!p || typeof p !== 'object') return null;
+
+              return (
+                <tr key={i}>
+                  <td>{p.port || '—'}</td>
+                  <td>{protocol}</td>
+                  <td>
+                    <span className="port-status">
+                      <span className="port-status-dot open" />
+                      Open
+                    </span>
+                  </td>
+                  <td>{p.service ? String(p.service).toUpperCase() : '—'}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       ) : (
         <div className="card-content">
-          {/* Fallback: render data as key-value pairs */}
-          {Object.entries(data || {}).map(([key, value]) => {
-            if (key === 'ports' || key === 'openPorts' || key === 'summary') return null;
-            return (
-              <div className="data-row" key={key}>
-                <span className="data-label">{key}</span>
-                <span className="data-value">{typeof value === 'object' ? JSON.stringify(value) : String(value)}</span>
-              </div>
-            );
-          })}
+          <div className="data-row">
+            <span className="data-label">Status</span>
+            <span className="data-value">No open ports found.</span>
+          </div>
         </div>
       )}
     </div>

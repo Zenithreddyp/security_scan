@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import ScanControls from '../components/ScanControls';
 import Terminal from '../components/Terminal';
@@ -23,6 +24,7 @@ const SCAN_LOGS_POOL = [
 
 export default function LandingPage() {
   const { token } = useUser();
+  const navigate = useNavigate();
   const [command, setCommand] = useState('security-scan');
   const [isScanning, setIsScanning] = useState(false);
   const [scanComplete, setScanComplete] = useState(false);
@@ -80,7 +82,10 @@ export default function LandingPage() {
       const data = await res.json();
       setScanProgress(100);
       setScanLogs(prev => [...prev, { text: 'Data received from backend', type: 'success', prefix: '[✓]' }]);
-      setResults(data.result || data);
+      
+      // Navigate dynamic to waiting dashboard
+      navigate(`/dashboard?scanId=${data.scan.id}`);
+      
     } catch (err) {
       clearInterval(progressInterval);
       setScanLogs(prev => [

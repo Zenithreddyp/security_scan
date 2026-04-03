@@ -5,25 +5,59 @@ import { v4 as uuidv4 } from "uuid";
 export const findScansByUser = async (user_id) => {
     const result = await pool.query(
         `
-        SELECT *
-        FROM scans
-        WHERE user_id = $1
-        ORDER BY created_at DESC
+        SELECT 
+            s.*,
+            t.target_url,
+            t.target_ip,
+            COALESCE(
+                json_agg(
+                    json_build_object(
+                        'id', f.id,
+                        'title', f.title,
+                        'severity', f.raw_data->>'severity',
+                        'description', f.raw_data->>'description'
+                    )
+                ) FILTER (WHERE f.id IS NOT NULL), 
+                '[]'
+            ) AS findings
+        FROM scans s
+        JOIN targets t ON s.target_id = t.id
+        LEFT JOIN findings f ON f.scan_id = s.id
+        WHERE t.user_id = $1
+        GROUP BY s.id, t.target_url, t.target_ip
+        ORDER BY s.started_at DESC
         `,
         [user_id]
     );
 
     return result.rows;
 };
+
 export const findScansByTarget = async (user_id, target_id) => {
     const result = await pool.query(
         `
-        SELECT s.*
+        SELECT 
+            s.*,
+            t.target_url,
+            t.target_ip,
+            COALESCE(
+                json_agg(
+                    json_build_object(
+                        'id', f.id,
+                        'title', f.title,
+                        'severity', f.raw_data->>'severity',
+                        'description', f.raw_data->>'description'
+                    )
+                ) FILTER (WHERE f.id IS NOT NULL), 
+                '[]'
+            ) AS findings
         FROM scans s
         JOIN targets t ON s.target_id = t.id
+        LEFT JOIN findings f ON f.scan_id = s.id
         WHERE t.user_id = $1
           AND s.target_id = $2
-        ORDER BY s.created_at DESC
+        GROUP BY s.id, t.target_url, t.target_ip
+        ORDER BY s.started_at DESC
         `,
         [user_id, target_id]
     );
@@ -63,4 +97,23 @@ export const updateScanStatus = async (id, status) => {
     const result = await pool.query(query, [status, id]);
 
     return result.rows[0];
+};
+
+export const findScanById = async (id) => {
+    const result = await pool.query(
+        `SELECT * FROM scans WHERE id = $1`,
+        [id]
+    );
+    return result.rows[0];
+};
+
+export const findUserIdByScanId = async (id) => {
+    const result = await pool.query(
+        `SELECT t.user_id 
+         FROM scans s 
+         JOIN targets t ON s.target_id = t.id 
+         WHERE s.id = $1`,
+        [id]
+    );
+    return result.rows[0]?.user_id;
 };

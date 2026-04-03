@@ -1,4 +1,10 @@
-import { createScan, findScansByUser, findScansByTarget } from "../../core/models/scan.model.js";
+import { listFindingsByScan } from "../../core/models/finding.model.js";
+import {
+    createScan,
+    findScansByUser,
+    findScansByTarget,
+    findScanById,
+} from "../../core/models/scan.model.js";
 import { findTargetByUserAndId } from "../../core/models/target.model.js";
 import { AddScantoQueue } from "../../core/services/scan.service.js";
 import { findOrCreateTarget } from "../../core/services/target.service.js";
@@ -7,10 +13,9 @@ import net from "node:net";
 export async function initiateScan(req, res) {
     try {
         const user_id = req.user.userId;
-        console.log("hello ruinning")
+        console.log("hello ruinning");
 
         const { target: body_target, scan_type, protocol, port_range } = req.body;
-
 
         if (!body_target) {
             res.status(400).json({ message: "Target not provided" });
@@ -103,7 +108,7 @@ export async function listScans(req, res) {
 
         res.status(500).json({
             message: "Server error",
-            error: process.env.NODE_ENV === "development" ? error.message : undefined,
+            error: error.message,
         });
     }
 }
@@ -129,5 +134,26 @@ export async function listScansByTarget(req, res) {
             message: "Server error",
             error: process.env.NODE_ENV === "development" ? error.message : undefined,
         });
+    }
+}
+
+export async function getScanDetails(req, res) {
+    try {
+        const { id } = req.params;
+        const scan = await findScanById(id);
+        
+        if (!scan) {
+            return res.status(404).json({ message: "Scan not found" });
+        }
+
+        const findings = await listFindingsByScan(id);
+        
+        res.status(200).json({
+            scan: scan,
+            findings: findings
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
     }
 }
