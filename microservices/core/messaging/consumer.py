@@ -2,6 +2,7 @@ import pika
 import json
 from handlers.ssl_handler import handle_ssl_scan
 from handlers.ip_handler import handle_ip_ssl_scan, handle_ip_port_scan
+from handlers.domain_handler import handle_subdomain_scan
 import threading
 
 
@@ -9,6 +10,7 @@ SCAN_ROUTER = {
     "SSL/TLS": handle_ssl_scan,
     "IP_RECON": handle_ip_ssl_scan,
     "IP_PORT_SCAN": handle_ip_port_scan,
+    "SUBDOMAIN_ENUM": handle_subdomain_scan,
     # "FULL_DOMAIN": handle_full_domain_flow,
     # "FULL_IP": handle_full_ip_flow,
 }

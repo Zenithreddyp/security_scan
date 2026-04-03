@@ -5,6 +5,7 @@ import Terminal from '../components/Terminal';
 import IpReconResult from '../components/results/IpReconResult';
 import SslTlsResult from '../components/results/SslTlsResult';
 import PortScanResult from '../components/results/PortScanResult';
+import SubdomainResult from '../components/results/SubdomainResult';
 import { Zap } from 'lucide-react';
 
 const SCAN_LOGS_POOL = [
@@ -111,6 +112,17 @@ export default function LandingPage() {
           cipher: 'TLS_AES_256_GCM_SHA384',
           keySize: '256-bit',
         });
+      } else if (config.type === 'SUBDOMAIN_ENUM') {
+        setResults({
+          total_subdomains: 5,
+          subdomains: [
+            { domain: `api.${config.target}`, active: true },
+            { domain: `dev.${config.target}`, active: false },
+            { domain: `staging.${config.target}`, active: true },
+            { domain: `admin.${config.target}`, active: false },
+            { domain: `blog.${config.target}`, active: true },
+          ]
+        });
       } else {
         setResults({
           ports: [
@@ -137,6 +149,7 @@ export default function LandingPage() {
       case 'IP_RECON': return <IpReconResult data={results} />;
       case 'SSL/TLS': return <SslTlsResult data={results} />;
       case 'IP_PORT_SCAN': return <PortScanResult data={results} />;
+      case 'SUBDOMAIN_ENUM': return <SubdomainResult data={results} />;
       default: return <IpReconResult data={results} />;
     }
   };

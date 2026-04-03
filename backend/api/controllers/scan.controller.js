@@ -43,7 +43,7 @@ export async function initiateScan(req, res) {
                 target_ip: body_target,
             });
         } else if (domainPattern.test(body_target)) {
-            const allowedDomainScans = ["SSL/TLS", "IP_PORT_SCAN"];
+            const allowedDomainScans = ["SSL/TLS", "IP_PORT_SCAN", "SUBDOMAIN_ENUM"];
 
             if (!allowedDomainScans.includes(scan_type)) {
                 res.status(400).json({

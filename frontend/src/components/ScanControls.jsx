@@ -7,6 +7,7 @@ const SCAN_TYPE_MAP = {
   IP_RECON: 'ip-recon',
   'SSL/TLS': 'ssl-check',
   IP_PORT_SCAN: 'port-scan',
+  SUBDOMAIN_ENUM: 'subdomain-enum',
 };
 
 export default function ScanControls({ onCommandChange, onSubmit, isScanning }) {
@@ -17,7 +18,7 @@ export default function ScanControls({ onCommandChange, onSubmit, isScanning }) 
   const [protocol, setProtocol] = useState('TCP');
 
   const showAdvanced = scanType === 'IP_PORT_SCAN' || (user && scanType === 'IP_PORT_SCAN');
-  const needsAuth = scanType === 'IP_PORT_SCAN' && !user;
+  const needsAuth = (scanType === 'IP_PORT_SCAN' || scanType === 'SUBDOMAIN_ENUM') && !user;
 
   // Build CLI command string reactively
   useEffect(() => {
@@ -65,6 +66,7 @@ export default function ScanControls({ onCommandChange, onSubmit, isScanning }) 
           <option value="IP_RECON">IP Reconnaissance</option>
           <option value="SSL/TLS">SSL / TLS Analysis</option>
           <option value="IP_PORT_SCAN">Port Scanning</option>
+          <option value="SUBDOMAIN_ENUM">Subdomain Enumeration</option>
         </select>
       </div>
 
@@ -113,6 +115,17 @@ export default function ScanControls({ onCommandChange, onSubmit, isScanning }) 
               <Link to="/auth" className="auth-gate-link">Sign In →</Link>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Subdomain Enum Auth Gate */}
+      {scanType === 'SUBDOMAIN_ENUM' && needsAuth && (
+        <div className="auth-gate" style={{ height: '80px', marginTop: '1rem', border: '1px solid var(--border-color)', borderRadius: 'var(--radius)' }}>
+          <div className="auth-gate-overlay" style={{ borderRadius: 'var(--radius)' }}>
+            <Lock size={20} />
+            <span className="auth-gate-text">Sign in to unlock Subdomain Enumeration</span>
+            <Link to="/auth" className="auth-gate-link">Sign In →</Link>
+          </div>
         </div>
       )}
 
