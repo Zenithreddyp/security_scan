@@ -155,8 +155,7 @@ EXTENDED_PORTS = sorted(
 )
 
 
-class NmapWrapper():
-
+class NmapWrapper:
     def parse_output(self, output):
         open_ports = []
         protocol = "tcp"  # default

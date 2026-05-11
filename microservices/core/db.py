@@ -1,6 +1,5 @@
 from psycopg2 import pool
 import uuid
-from datetime import datetime
 import json
 import os
 from dotenv import load_dotenv

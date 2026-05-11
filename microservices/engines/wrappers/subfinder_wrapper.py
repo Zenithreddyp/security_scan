@@ -1,5 +1,6 @@
 import subprocess
-import socket, requests
+import socket
+import requests
 
 
 import shutil
@@ -12,6 +13,7 @@ import shutil
 
 # if path is None:
 #     raise Exception("subfinder not found. Please install it and add to PATH.")
+
 
 class SubfinderWrapper:
     def __init__(self, path=None):
@@ -27,7 +29,6 @@ class SubfinderWrapper:
             for line in result.stdout.splitlines():
                 line = line.strip()
                 if line:  # skip empty lines
-
                     subdomain.append({"domain": line, "active": self.isactive(line)})
 
         error = None

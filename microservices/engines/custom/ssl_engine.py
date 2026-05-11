@@ -5,6 +5,7 @@ from datetime import datetime, UTC
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 
+
 def parse_name(field):
     """Convert certificate subject/issuer tuple into dict"""
     result = {}
@@ -12,6 +13,7 @@ def parse_name(field):
         for key, value in item:
             result[key] = value
     return result
+
 
 class SSLEngine(BaseEngine):
     def run(self, target, **kwargs):
@@ -35,7 +37,6 @@ class SSLEngine(BaseEngine):
         try:
             with socket.create_connection((hostname, 443), timeout=5) as sock:
                 with context.wrap_socket(sock, server_hostname=hostname) as ssock:
-
                     cert = ssock.getpeercert()
 
                     result["subject"] = parse_name(cert.get("subject", ()))
@@ -55,14 +56,18 @@ class SSLEngine(BaseEngine):
                     result["valid_until"] = not_after.isoformat()
                     result["days_left"] = (not_after - datetime.now(UTC)).days
                     result["serial_number"] = cert.get("serialNumber")
-                    
+
                     der_cert = ssock.getpeercert(binary_form=True)
-                    cert_obj = x509.load_der_x509_certificate(der_cert, default_backend())
-                    result["signature_algorithm"] = cert_obj.signature_algorithm_oid._name
+                    cert_obj = x509.load_der_x509_certificate(
+                        der_cert, default_backend()
+                    )
+                    result["signature_algorithm"] = (
+                        cert_obj.signature_algorithm_oid._name
+                    )
 
         except Exception as e:
             import traceback
-            result["error"] = f"{str(e)}\n{traceback.format_exc()}"
 
+            result["error"] = f"{str(e)}\n{traceback.format_exc()}"
 
         return result

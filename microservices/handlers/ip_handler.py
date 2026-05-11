@@ -36,16 +36,18 @@ def handle_ip_ssl_scan(scan_id, target, **kwargs):
 
 
 def handle_ip_port_scan(scan_id, target, **kwargs):
-    ip = target.get("ip") or target.get("url") #becoz target can be an ip or an url
-    protocol=kwargs.get("protocol") or "TCP"
-    port_range=kwargs.get("port_range") or "basic"
+    ip = target.get("ip") or target.get("url")  # becoz target can be an ip or an url
+    protocol = kwargs.get("protocol") or "TCP"
+    port_range = kwargs.get("port_range") or "basic"
 
     update_scan_status(scan_id, "started")
 
     result = NmapWrapper().run(ip, port_range=port_range)
 
     try:
-        finding_id = add_finding(scan_id, f"{protocol.upper()} scan, range {port_range}", result)
+        finding_id = add_finding(
+            scan_id, f"{protocol.upper()} scan, range {port_range}", result
+        )
 
         payload = json.dumps(
             {
