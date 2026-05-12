@@ -7,12 +7,12 @@ import shutil
 # from core.base_engine import BaseEngine
 
 
-# path = "subfinder" # Generic alternative if added to PATH
-# path = "C:\\Users\\zenith\\Downloads\\subfinder_2.13.0_windows_amd64\\subfinder.exe"
-# path = shutil.which("subfinder")
+path = "subfinder" # Generic alternative if added to PATH
+path = "C:\\Users\\zenith\\Downloads\\subfinder_2.13.0_windows_amd64\\subfinder.exe"
+path = shutil.which("subfinder")
 
-# if path is None:
-#     raise Exception("subfinder not found. Please install it and add to PATH.")
+if path is None:
+    raise Exception("subfinder not found. Please install it and add to PATH.")
 
 
 class SubfinderWrapper:

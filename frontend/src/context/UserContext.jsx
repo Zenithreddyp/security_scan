@@ -23,7 +23,7 @@ export const UserProvider = ({ children }) => {
 
     const login = async (email, password) => {
         try {
-            const resp = await fetch("http://localhost:5000/api/auth/login", {
+            const resp = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
@@ -45,7 +45,7 @@ export const UserProvider = ({ children }) => {
 
     const register = async (name, email, password) => {
         try {
-            const resp = await fetch("http://localhost:5000/api/auth/register", {
+            const resp = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ name, email, password }),
@@ -63,7 +63,7 @@ export const UserProvider = ({ children }) => {
     };
 
     const logout = async () => {
-        await fetch("http://localhost:5000/api/auth/logout", {
+        await fetch(`${import.meta.env.VITE_API_URL}/api/auth/logout`, {
             method: "POST",
             credentials: "include",
         });

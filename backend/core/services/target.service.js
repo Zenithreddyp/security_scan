@@ -1,4 +1,3 @@
-import dns from "dns/promises";
 import { parse } from "tldts";
 import { createTarget, findTargetsbyUserwithURLorIP } from "../models/target.model.js";
 

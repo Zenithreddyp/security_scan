@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken"
+import jwt from "jsonwebtoken";
 
 export function authenticateToken(req, res, next) {
 
@@ -18,6 +18,6 @@ export function authenticateToken(req, res, next) {
         next();
 
     } catch (error) {
-        return res.status(403).json({ message: "Invalid or expired access token" });
+        return res.status(403).json({ message: "Invalid or expired access token",er:error });
     }
 }

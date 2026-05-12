@@ -69,7 +69,7 @@ export default function LandingPage() {
       if (token) headers['Authorization'] = `Bearer ${token}`;
       console.log(headers);
 
-      const res = await fetch('http://localhost:5000/api/scan/addscan', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/scan/addscan`, {
         method: 'POST',
         headers,
         body: JSON.stringify(payload),

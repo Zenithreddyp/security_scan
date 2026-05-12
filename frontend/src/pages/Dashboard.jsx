@@ -39,7 +39,7 @@ export default function Dashboard() {
              const headers = {};
              if (token) headers['Authorization'] = `Bearer ${token}`;
 
-             const res = await fetch(`http://localhost:5000/api/scan/details/${scanId}`, { headers });
+             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/scan/details/${scanId}`, { headers });
              if (!res.ok) throw new Error('API failed to fetch scan details');
              
              const data = await res.json();

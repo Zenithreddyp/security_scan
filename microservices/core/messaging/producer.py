@@ -1,8 +1,9 @@
 import pika
+import os
 
 
 def addScantoResult(payload):
-    connection = pika.BlockingConnection(pika.ConnectionParameters("localhost"))
+    connection = pika.BlockingConnection(pika.ConnectionParameters(os.environ.get("RABBITMQ_HOST", "localhost")))
     channel = connection.channel()
 
     channel.queue_declare(queue="scan_results", durable=True)

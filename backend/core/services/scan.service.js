@@ -5,7 +5,7 @@ import { getIo, userSockets } from "../config/socket.js";
 
 export async function AddScantoQueue(payload) {
     try {
-        const connection = await amqp.connect("amqp://localhost");
+        const connection = await amqp.connect(process.env.RABBITMQ_URL);
 
         const channel = await connection.createChannel();
 
@@ -33,7 +33,7 @@ export async function AddScantoQueue(payload) {
 
 export async function ConsumeScanResults() {
     try {
-        const connection = await amqp.connect("amqp://localhost");
+        const connection = await amqp.connect(process.env.RABBITMQ_URL);
         const channel = await connection.createChannel();
 
         const queue = "scan_results"; // Python → Node queue

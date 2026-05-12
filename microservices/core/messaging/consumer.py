@@ -1,4 +1,5 @@
 import pika
+import os
 import json
 from handlers.ssl_handler import handle_ssl_scan
 from handlers.ip_handler import handle_ip_ssl_scan, handle_ip_port_scan
@@ -56,7 +57,7 @@ def process_scan_job(connection, channel, delivery_tag, body):
 
 
 def start_consuming():
-    connection = pika.BlockingConnection(pika.ConnectionParameters("localhost"))
+    connection = pika.BlockingConnection(pika.ConnectionParameters(os.environ.get("RABBITMQ_HOST", "localhost")))
     channel = connection.channel()
     channel.queue_declare(queue="scans", durable=True)
     channel.basic_qos(prefetch_count=1)

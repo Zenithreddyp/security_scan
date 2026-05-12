@@ -18,7 +18,7 @@ const server = http.createServer(app);
 // Initialize WebSockets
 initSocket(server);
 
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use(cors({ origin: process.env.FRONTEND_URL, credentials: true }));
 app.use(express.json());
 
 app.get("/", async (req, res) => {

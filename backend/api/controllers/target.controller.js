@@ -1,7 +1,5 @@
 import { findTargetsByUser ,updateTargetLabel} from "../../core/models/target.model.js";
 
-import dns from "dns/promises";
-import { parse } from "tldts";
 import { findOrCreateTarget } from "../../core/services/target.service.js";
 
 export async function listTargets(req, res) {

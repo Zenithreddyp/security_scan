@@ -14,7 +14,7 @@ export const SocketProvider = ({ children }) => {
         // Let's check if user object has an id
         if (user && (user._id || user.id || user.userId)) {
             const userId = user._id || user.userId || user.id;
-            const newSocket = io("http://localhost:5000", {
+            const newSocket = io(import.meta.env.VITE_SOCKET_URL, {
                 query: { userId }
             });
 

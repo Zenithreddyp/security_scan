@@ -53,10 +53,10 @@ export default function PreviousScans() {
     async function fetchData() {
       try {
         const [scansRes, targetsRes] = await Promise.all([
-          fetch('http://localhost:5000/api/scan/scans', {
+          fetch(`${import.meta.env.VITE_API_URL}/api/scan/scans`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          fetch('http://localhost:5000/api/target/alltargets', {
+          fetch(`${import.meta.env.VITE_API_URL}/api/target/alltargets`, {
             headers: { Authorization: `Bearer ${token}` },
           })
         ]);
