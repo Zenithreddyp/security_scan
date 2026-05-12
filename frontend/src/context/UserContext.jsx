@@ -4,6 +4,17 @@ const UserContext = createContext();
 
 export const useUser = () => useContext(UserContext);
 
+// Decode JWT payload without external library
+function decodeJwtPayload(token) {
+    try {
+        const base64Payload = token.split(".")[1];
+        const decoded = JSON.parse(atob(base64Payload));
+        return decoded;
+    } catch {
+        return null;
+    }
+}
+
 export const UserProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [token, setToken] = useState(null);
@@ -11,10 +22,15 @@ export const UserProvider = ({ children }) => {
 
     useEffect(() => {
         if (token) {
-            // Decode JWT token to get user info if needed, or simply assume logged in.
-            // Usually, we'd verify the token with the backend.
-            // For now, we'll just mock user info to prevent waiting for a `/me` endpoint
-            setUser({ token });
+            // Decode JWT to extract userId so SocketContext can register the connection
+            const payload = decodeJwtPayload(token);
+            const userId = payload?.userId || null;
+            setUser((prev) => {
+                // If we already have a full user object (from login/register), keep it but ensure userId
+                if (prev && prev.id) return { ...prev, userId: prev.id };
+                // Fallback: build a minimal user from the token
+                return { token, userId };
+            });
         } else {
             setUser(null);
         }
@@ -32,10 +48,10 @@ export const UserProvider = ({ children }) => {
             const data = await resp.json();
             if (resp.ok && data.accessToken) {
                 setToken(data.accessToken);
-                setUser(data.user);
+                // Ensure user object always has a userId field for socket registration
+                setUser({ ...data.user, userId: data.user.id });
                 return true;
-              }
-
+            }
             return false;
         } catch (err) {
             console.error("Login error:", err);
@@ -48,11 +64,13 @@ export const UserProvider = ({ children }) => {
             const resp = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, email, password }),
+                body: JSON.stringify({ full_name: name, email, password }),
             });
             const data = await resp.json();
-            if (resp.ok && data.token) {
-                setToken(data.token);
+            // Backend returns `accessToken` on registration (not `token`)
+            if (resp.ok && data.accessToken) {
+                setToken(data.accessToken);
+                setUser({ ...data.user, userId: data.user.id });
                 return true;
             }
             return false;

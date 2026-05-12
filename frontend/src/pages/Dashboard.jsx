@@ -6,6 +6,7 @@ import { useSocket } from '../context/SocketContext';
 import IpReconResult from '../components/results/IpReconResult';
 import SslTlsResult from '../components/results/SslTlsResult';
 import PortScanResult from '../components/results/PortScanResult';
+import SubdomainResult from '../components/results/SubdomainResult';
 import ResultCard from '../components/ResultCard';
 
 export default function Dashboard() {
@@ -71,8 +72,9 @@ export default function Dashboard() {
       const handleScanCompleted = (data) => {
           if (data.scan_id === scanId) {
               setLogs(prev => [...prev, '✓ Scan Complete (Real-time update received).']);
-              setResults(data.results);
-              
+              setResults(data.findings);
+              // Also update scanType from the socket payload if available
+              if (data.scan_type) setScanType(data.scan_type);
               setLoading(false);
           }
       };
@@ -102,10 +104,11 @@ export default function Dashboard() {
   const renderResult = () => {
     if (!results) return null;
     switch (scanType) {
-      case 'SSL/TLS': return <SslTlsResult data={results} />;
-      case 'IP_PORT_SCAN': return <PortScanResult data={results} />;
+      case 'SSL/TLS':       return <SslTlsResult data={results} />;
+      case 'IP_PORT_SCAN':  return <PortScanResult data={results} />;
+      case 'SUBDOMAIN_ENUM': return <SubdomainResult data={results} />;
       case 'IP_RECON':
-      default: return <IpReconResult data={results} />;
+      default:              return <IpReconResult data={results} />;
     }
   };
 

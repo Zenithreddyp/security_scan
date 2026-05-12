@@ -11,6 +11,7 @@ import { router as findingRoutus } from "./api/routes/finding.routes.js";
 import pool from "./core/config/db.js";
 import http from "http";
 import { initSocket } from "./core/config/socket.js";
+import { ConsumeScanResults } from "./core/services/scan.service.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -24,7 +25,6 @@ app.use(express.json());
 app.get("/", async (req, res) => {
     const result = await pool.query("SELECT NOW()");
     res.json(result);
-    // res.send("Backend running");
 });
 
 app.use((req, res, next) => {
@@ -42,4 +42,7 @@ const PORT = process.env.PORT || 5000;
 
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+    // Start consuming scan results from RabbitMQ after server + socket are ready
+    ConsumeScanResults();
 });
+

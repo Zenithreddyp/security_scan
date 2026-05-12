@@ -23,11 +23,12 @@ def handle_ssl_scan(scan_id, target, **kwargs):
             }
         )
         addScantoResult(payload)
+        update_scan_status(scan_id, "completed" if result["error"] is None else "failed")
 
     except Exception as e:
         error_payload = json.dumps(
             {"scan_id": scan_id, "status": "failed", "error": str(e)}
         )
         addScantoResult(error_payload)
-
         update_scan_status(scan_id, "failed")
+

@@ -2,7 +2,13 @@ import React from 'react';
 import { Layers } from 'lucide-react';
 
 export default function SubdomainResult({ data }) {
-  const { subdomains = [], total_subdomains = 0 } = data || {};
+  // Unwrap findings array → raw_data if needed
+  const raw = Array.isArray(data)
+    ? (data[0]?.raw_data || data[0] || {})
+    : (data?.raw_data || data || {});
+
+  const subdomains = Array.isArray(raw.subdomains) ? raw.subdomains : [];
+  const total_subdomains = raw.total_subdomains ?? subdomains.length;
 
   return (
     <div className="result-card">
@@ -21,17 +27,17 @@ export default function SubdomainResult({ data }) {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {subdomains.slice(0, 50).map((sub, idx) => (
-              <div key={idx} style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                padding: '0.5rem', 
-                background: 'var(--bg-card-hover)', 
-                borderRadius: 'var(--radius)' 
+              <div key={idx} style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                padding: '0.5rem',
+                background: 'var(--bg-card-hover)',
+                borderRadius: 'var(--radius)'
               }}>
                 <span className="mono" style={{ fontSize: '0.875rem' }}>{sub.domain}</span>
-                <span style={{ 
-                  fontSize: '0.75rem', 
-                  color: sub.active ? 'var(--safe-color)' : 'var(--text-muted)' 
+                <span style={{
+                  fontSize: '0.75rem',
+                  color: sub.active ? 'var(--safe-color)' : 'var(--text-muted)'
                 }}>
                   {sub.active ? 'Active' : 'Inactive'}
                 </span>
