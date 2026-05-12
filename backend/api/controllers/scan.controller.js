@@ -1,4 +1,10 @@
-import { createScan, findScansByUser, findScansByTarget } from "../../core/models/scan.model.js";
+import { listFindingsByScan } from "../../core/models/finding.model.js";
+import {
+    createScan,
+    findScansByUser,
+    findScansByTarget,
+    findScanById,
+} from "../../core/models/scan.model.js";
 import { findTargetByUserAndId } from "../../core/models/target.model.js";
 import { AddScantoQueue } from "../../core/services/scan.service.js";
 import { findOrCreateTarget } from "../../core/services/target.service.js";
@@ -7,10 +13,10 @@ import net from "node:net";
 export async function initiateScan(req, res) {
     try {
         const user_id = req.user.userId;
+        console.log("hello ruinning");
 
-        const body_target = req.body.target;
-        const scan_type = req.body.scan_type;
-        
+        const { target: body_target, scan_type, protocol, port_range } = req.body;
+
         if (!body_target) {
             res.status(400).json({ message: "Target not provided" });
             return;
@@ -21,19 +27,19 @@ export async function initiateScan(req, res) {
             return;
         }
 
-        console.log("Target:", body_target, "| Scan Type:", scan_type);        
+        console.log("Target:", body_target, "| Scan Type:", scan_type);
 
         // const ippatern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.(?!$)|$){4}$/;
         const domainPattern = /^(?!-)([A-Za-z0-9-]{1,63}\.)+[A-Za-z]{2,}$/;
-        
+
         let target;
-        
+
         if (net.isIP(body_target)) {
-            const allowedIpScans = ["recon", "port"];
+            const allowedIpScans = ["IP_RECON", "IP_PORT_SCAN"];
 
             if (!allowedIpScans.includes(scan_type)) {
-                res.status(400).json({ 
-                    message: `Invalid scan type '${scan_type}' for an IP target. Allowed scans: ${allowedIpScans.join(', ')}` 
+                res.status(400).json({
+                    message: `Invalid scan type '${scan_type}' for an IP target. Allowed scans: ${allowedIpScans.join(",")}`,
                 });
                 return;
             }
@@ -42,28 +48,30 @@ export async function initiateScan(req, res) {
                 target_ip: body_target,
             });
         } else if (domainPattern.test(body_target)) {
-            const allowedDomainScans = ["ssl", "port"];
+            const allowedDomainScans = ["SSL/TLS", "IP_PORT_SCAN", "SUBDOMAIN_ENUM"];
 
             if (!allowedDomainScans.includes(scan_type)) {
-                res.status(400).json({ 
-                    message: `Invalid scan type '${scan_type}' for a Domain target. Allowed scans: ${allowedDomainScans.join(', ')}` 
+                res.status(400).json({
+                    message: `Invalid scan type '${scan_type}' for a Domain target. Allowed scans: ${allowedDomainScans.join(",")}`,
                 });
                 return;
             }
-            
+
             target = await findOrCreateTarget(user_id, {
                 target_url: body_target,
             });
         } else {
-            res.status(400).json({ message: "Provided Target is neither a domain nor an IP" ,"wtthere":target});
+            res.status(400).json({
+                message: "Provided Target is neither a domain nor an IP",
+                wtthere: target,
+            });
             return;
         }
-        
-        
-        const scan = await createScan(target.id, req.body.scan_type);
+
+        const scan = await createScan(target.id, scan_type);
 
         await AddScantoQueue({
-            scan: { id: scan.id, type: scan.scan_type },
+            scan: { id: scan.id, type: scan.scan_type, protocol: protocol, port_range: port_range },
             target: {
                 id: target.id,
                 url: target.target_url,
@@ -81,7 +89,7 @@ export async function initiateScan(req, res) {
 
         res.status(500).json({
             message: "Server error",
-            error: process.env.NODE_ENV === "development" ? error.message : undefined
+            error: process.env.NODE_ENV === "development" ? error.message : undefined,
         });
     }
 }
@@ -100,7 +108,7 @@ export async function listScans(req, res) {
 
         res.status(500).json({
             message: "Server error",
-            error: process.env.NODE_ENV === "development" ? error.message : undefined
+            error: error.message,
         });
     }
 }
@@ -124,7 +132,28 @@ export async function listScansByTarget(req, res) {
 
         res.status(500).json({
             message: "Server error",
-            error: process.env.NODE_ENV === "development" ? error.message : undefined
+            error: process.env.NODE_ENV === "development" ? error.message : undefined,
         });
+    }
+}
+
+export async function getScanDetails(req, res) {
+    try {
+        const { id } = req.params;
+        const scan = await findScanById(id);
+        
+        if (!scan) {
+            return res.status(404).json({ message: "Scan not found" });
+        }
+
+        const findings = await listFindingsByScan(id);
+        
+        res.status(200).json({
+            scan: scan,
+            findings: findings
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
     }
 }

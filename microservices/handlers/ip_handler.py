@@ -1,16 +1,16 @@
 import json
-from config.db import update_scan_status, add_finding
-from modules.ip.recon_module import recon_scan
-from messaging.producer import addScantoResult
-from modules.ip.port_module import port_scan
+from core.db import update_scan_status, add_finding
+from engines.custom.recon_engine import ReconEngine
+from core.messaging.producer import addScantoResult
+from engines.wrappers.nmap_wrapper import NmapWrapper
 
 
-def handle_ip_ssl_scan(scan_id, target, scan_type):
+def handle_ip_ssl_scan(scan_id, target, **kwargs):
 
     ip = target.get("ip")
     update_scan_status(scan_id, "started")
 
-    result = recon_scan(ip)
+    result = ReconEngine().run(ip)
 
     try:
         finding_id = add_finding(scan_id, "Basic Recon and Intelligence", result)
@@ -35,16 +35,19 @@ def handle_ip_ssl_scan(scan_id, target, scan_type):
         update_scan_status(scan_id, "failed")
 
 
-def handel_ip_port_scan(scan_id, target, scan_level):
-    scan_level=3
-    ip = target.get("ip")
+def handle_ip_port_scan(scan_id, target, **kwargs):
+    ip = target.get("ip") or target.get("url")  # becoz target can be an ip or an url
+    protocol = kwargs.get("protocol") or "TCP"
+    port_range = kwargs.get("port_range") or "basic"
 
     update_scan_status(scan_id, "started")
 
-    result = port_scan(ip,scan_level)
+    result = NmapWrapper().run(ip, port_range=port_range)
 
     try:
-        finding_id = add_finding(scan_id, f"TCPscan{scan_level}", result)
+        finding_id = add_finding(
+            scan_id, f"{protocol.upper()} scan, range {port_range}", result
+        )
 
         payload = json.dumps(
             {
