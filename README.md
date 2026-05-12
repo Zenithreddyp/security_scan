@@ -1,4 +1,4 @@
-# Security Scan Project
+# Security Scan
 
 A comprehensive, automated security scanning tool designed to identify vulnerabilities, misconfigurations, and security weaknesses in web applications and network infrastructure.
 
