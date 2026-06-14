@@ -1644,7 +1644,19 @@ img {
   text-align: center;
 }
 
+.auth-success {
+  padding: 0.625rem;
+  background: var(--success-bg);
+  color: var(--success);
+  border-radius: var(--radius);
+  font-size: 0.8125rem;
+  text-align: center;
+}
+
 .auth-toggle {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
   text-align: center;
   margin-top: 1.5rem;
   padding-top: 1.5rem;

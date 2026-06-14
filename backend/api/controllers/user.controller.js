@@ -49,7 +49,7 @@ export async function updatePassword(req, res) {
 
         const validPassword = await bcrypt.compare(
             currentPassword,
-            user.password,
+            user.password_hash,
         );
         if (!validPassword) {
             return res
