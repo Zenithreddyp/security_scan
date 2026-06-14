@@ -1,11 +1,11 @@
-import { updateUserPassword,findUserById } from "../../core/models/user.model.js";
+import { updateUserPassword,findUserById, getUserById } from "../../core/models/user.model.js";
 import bcrypt from "bcrypt";
 
 
 export async function getProfile(req, res) {
     try {
         const userId = req.user.userId;
-        const user = await findUserById(userId);
+        const user = await getUserById(userId);
 
         if (!user) {
             return res.status(404).json({ message: "User not found" });
@@ -18,6 +18,7 @@ export async function getProfile(req, res) {
                 last_name: user.last_name,
                 email: user.email,
                 phoneno: user.phoneno,
+                user_plan: user.role,
             },
         });
     } catch (error) {

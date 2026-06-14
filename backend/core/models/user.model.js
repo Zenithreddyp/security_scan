@@ -38,6 +38,21 @@ export async function findUserById(id) {
 }
 
 
+export async function getUserById(id) {
+  const result = await pool.query(
+    `
+    SELECT *
+    FROM users u
+    JOIN roles r
+      ON u.role_id = r.id
+    WHERE u.id = $1
+    `,
+    [id]
+  );
+
+  return result.rows[0];
+}
+
 
 export async function updateUserPassword(userId, newHashedPassword) {
   const query = "UPDATE users SET password = $1 WHERE id = $2";
