@@ -38,7 +38,7 @@ CREATE TABLE findings (
     scan_id UUID NOT NULL REFERENCES scans(id) ON DELETE CASCADE,
 
     title TEXT NOT NULL,
-    severity TEXT NOT NULL DEFAULT 'info'
+    severity TEXT NOT NULL DEFAULT 'info',
     raw_data JSONB,
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),

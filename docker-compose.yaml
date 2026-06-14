@@ -26,6 +26,8 @@ services:
       POSTGRES_PASSWORD: securityscan
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./users.sql:/docker-entrypoint-initdb.d/01-users.sql:ro
+      - ./scanning.sql:/docker-entrypoint-initdb.d/02-scanning.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U securityscan"]
       interval: 5s
