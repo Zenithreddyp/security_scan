@@ -3,21 +3,20 @@ import pool from "../config/db.js";
 import { v4 as uuidv4 } from 'uuid';
 
 
-export async function createUser(full_name, last_name, phoneno, email, password) {
+export async function createUser(full_name, last_name, phoneno, email, password, status) {
   
   const id = uuidv4();
 
   const query = `
-    INSERT INTO users (id, full_name, last_name, phoneno, email, password)
-    VALUES ($1, $2, $3, $4, $5, $6)
-    RETURNING id, full_name, last_name, phoneno, email, created_at
+      INSERT INTO users (id, full_name, last_name, phoneno, email, password, status)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      RETURNING id, full_name, last_name, phoneno, email, status, created_at
   `;
 
-  const values = [id, full_name, last_name, phoneno, email, password];
+    const values = [id, full_name, last_name, phoneno, email, password, status];
 
-
-  const result = await pool.query(query, values);
-  return result.rows[0];
+    const result = await pool.query(query, values);
+    return result.rows[0];
 }
 
 export async function findUserByEmail(email) {
@@ -44,15 +43,6 @@ export async function updateUserPassword(userId, newHashedPassword) {
   await pool.query(query, [newHashedPassword, userId]);
 }
 
-export async function saveRefreshToken(userId, token) {
-  const query = "UPDATE users SET refresh_token = $1 WHERE id = $2";
-  await pool.query(query, [token, userId]);
-}
-
-export async function removeRefreshToken(userId) {
-  const query = "UPDATE users SET refresh_token = NULL WHERE id = $1";
-  await pool.query(query, [userId]);
-}
 
 
 

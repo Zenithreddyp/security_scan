@@ -13,8 +13,8 @@ import {
 import { authenticateToken } from "../middleware/auth.middleware.js";
 
 router.post("/register", register);
+router.post("/verify-email-otp", verifyEmailOtp);
 router.post("/login", login);
 router.post("/refresh", refreshaccessToken);
-router.post("/logout", authenticateToken, logout);
-
-router.post("/verify-email-otp", verifyEmailOtp);
+router.post("/logout", logout);
+router.post("/logout-all", authenticate, logoutAll);

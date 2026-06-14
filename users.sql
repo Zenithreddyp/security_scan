@@ -32,15 +32,16 @@ CREATE TABLE users (
 CREATE TABLE refresh_sessions (
     id UUID PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    token_hash TEXT NOT NULL UNIQUE,
+    token_hash TEXT UNIQUE NOT NULL,
+    family_id UUID NOT NULL,
     user_agent TEXT,
-    ip_address INET,
-    expires_at TIMESTAMPTZ NOT NULL,
-    revoked_at TIMESTAMPTZ,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    last_used_at TIMESTAMPTZ
+    ip_address TEXT,
+    expires_at TIMESTAMP NOT NULL,
+    revoked_at TIMESTAMP,
+    revoked_reason TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_used_at TIMESTAMP
 );
-
 CREATE TABLE email_otps (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
