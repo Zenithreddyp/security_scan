@@ -23,6 +23,7 @@ CREATE TABLE users (
     phoneno TEXT,
     email TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
+    status VARCHAR(50) DEFAULT 'pending_email_verification'
     role_id UUID NOT NULL REFERENCES roles(id),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -38,6 +39,14 @@ CREATE TABLE refresh_sessions (
     revoked_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     last_used_at TIMESTAMPTZ
+);
+
+CREATE TABLE email_otps (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    otp_hash TEXT NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX idx_users_role_id

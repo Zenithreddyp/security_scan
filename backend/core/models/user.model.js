@@ -72,3 +72,58 @@ export async function userHasPermission(userId, permissionKey) {
 
     return result.rowCount > 0;
 }
+
+
+
+
+export async function createEmailOtp(userId, otpHash, expiresAt) {
+    const result = await pool.query(
+        `
+        INSERT INTO email_otps (user_id, otp_hash, expires_at)
+        VALUES ($1, $2, $3)
+        RETURNING *
+        `,
+        [userId, otpHash, expiresAt]
+    );
+
+    return result.rows[0];
+}
+
+export async function findLatestOtpByUserId(userId) {
+    const result = await pool.query(
+        `
+        SELECT *
+        FROM email_otps
+        WHERE user_id = $1
+        ORDER BY created_at DESC
+        LIMIT 1
+        `,
+        [userId]
+    );
+
+    return result.rows[0];
+}
+
+export async function deleteOtpsByUserId(userId) {
+    await pool.query(
+        `
+        DELETE FROM email_otps
+        WHERE user_id = $1
+        `,
+        [userId]
+    );
+}
+
+export async function updateUserStatus(userId, status) {
+    const result = await pool.query(
+        `
+        UPDATE users
+        SET status = $1
+        WHERE id = $2
+        RETURNING *
+        `,
+        [status, userId]
+    );
+
+    return result.rows[0];
+}
