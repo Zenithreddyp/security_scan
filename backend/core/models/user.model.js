@@ -53,3 +53,22 @@ export async function removeRefreshToken(userId) {
   const query = "UPDATE users SET refresh_token = NULL WHERE id = $1";
   await pool.query(query, [userId]);
 }
+
+
+
+export async function userHasPermission(userId, permissionKey) {
+    const result = await pool.query(
+        `
+        SELECT 1
+        FROM users u
+        JOIN role_permissions rp ON rp.role_id = u.role_id
+        JOIN permissions p ON p.id = rp.permission_id
+        WHERE u.id = $1
+        AND p.key = $2
+        LIMIT 1
+        `,
+        [userId, permissionKey]
+    );
+
+    return result.rowCount > 0;
+}

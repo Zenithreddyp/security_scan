@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import {getCookie} from "../helper.js";
+import { getCookie } from "../helper.js";
 
 import {
     createUser,
@@ -12,7 +12,7 @@ import {
 
 const generateTokens = (userId) => {
     const accessToken = jwt.sign({ userId: userId }, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: "1d",
+        expiresIn: "15m",
     });
     const refreshToken = jwt.sign({ userId: userId }, process.env.REFRESH_TOKEN_SECRET, {
         expiresIn: "7d",
@@ -22,7 +22,7 @@ const generateTokens = (userId) => {
 
 export async function register(req, res) {
     try {
-        const { full_name, last_name, phoneno, email, password } = req.body;
+        const { full_name, last_name, phoneno, email, password} = req.body;
 
         const existingUser = await findUserByEmail(email);
 

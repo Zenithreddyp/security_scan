@@ -22,9 +22,12 @@ initSocket(server);
 app.use(cors({ origin: process.env.FRONTEND_URL, credentials: true }));
 app.use(express.json());
 
-app.get("/", async (req, res) => {
-    const result = await pool.query("SELECT NOW()");
-    res.json(result);
+app.get("/health", async (req, res) => {
+    res.status(200).json({
+        status: "UP",
+        database: "CONNECTED",
+        uptime: process.uptime(),
+    });
 });
 
 app.use((req, res, next) => {
@@ -45,4 +48,3 @@ server.listen(PORT, () => {
     // Start consuming scan results from RabbitMQ after server + socket are ready
     ConsumeScanResults();
 });
-
