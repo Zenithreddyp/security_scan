@@ -18,6 +18,7 @@ This platform provides a centralized interface for performing various security r
 - **Port Scanning:** Identifies open ports and services using integrated Nmap wrappers.
 - **SSL/TLS Analysis:** Evaluates the security posture of SSL/TLS configurations.
 - **Subdomain Enumeration:** Discovers subdomains using specialized engines like Amass and Subfinder.
+- **Bug Bounty Recon Scans:** Adds DNS records, HTTP headers, CORS, tech stack detection, directory discovery, JS secret checks, well-known files, takeover fingerprints, archived URLs, WAF detection, and wrappers for common open-source tools.
 - **Historical Tracking:** Stores and categorizes past scan results by target for longitudinal security monitoring.
 
 ---
@@ -39,6 +40,21 @@ This platform provides a centralized interface for performing various security r
 - **Python Workers:** Execute scanning logic asynchronously via a queue system.
 - **pika:** RabbitMQ client for Python workers.
 - **Engine Wrappers:** Integrations with specific engines (e.g., Nmap, Amass, Subfinder).
+
+### Optional External Scanner Binaries
+Some scans are native Python checks, while these wrappers call open-source binaries if they are installed in the worker container or host `PATH`:
+
+- `nuclei` for template-based vulnerability scanning
+- `httpx` for web probing and technology detection
+- `naabu` for fast port discovery
+- `katana` for crawling and endpoint discovery
+- `dnsx` for DNS resolution
+- `ffuf` for content discovery
+- `gau` or `waybackurls` for archived URL discovery
+- `wafw00f` for WAF detection
+- `subzy` for takeover checks
+
+If a binary is missing, the worker records a failed finding with an install hint instead of crashing.
 
 ---
 
@@ -138,8 +154,8 @@ python worker.py
 
 ## Scan Validation Rules
 
-- **IP Targets:** `IP_RECON`, `IP_PORT_SCAN`
-- **Domain Targets:** `SSL/TLS`, `IP_PORT_SCAN`, `SUBDOMAIN_ENUM`
+- **IP Targets:** `IP_RECON`, `IP_PORT_SCAN`, `HTTP_HEADERS`, `CORS_AUDIT`, `TECH_STACK`, `DIRECTORY_DISCOVERY`, `JS_SECRET_SCAN`, `NUCLEI_SCAN`, `HTTPX_PROBE`, `NAABU_SCAN`, `KATANA_CRAWL`, `FFUF_CONTENT_DISCOVERY`, `WAF_DETECTION`
+- **Domain Targets:** `SSL/TLS`, `IP_PORT_SCAN`, `SUBDOMAIN_ENUM`, `DNS_RECORDS`, `HTTP_HEADERS`, `CORS_AUDIT`, `TECH_STACK`, `DIRECTORY_DISCOVERY`, `WELL_KNOWN_FILES`, `JS_SECRET_SCAN`, `SUBDOMAIN_TAKEOVER`, `NUCLEI_SCAN`, `HTTPX_PROBE`, `NAABU_SCAN`, `KATANA_CRAWL`, `DNSX_LOOKUP`, `FFUF_CONTENT_DISCOVERY`, `ARCHIVE_URLS`, `WAF_DETECTION`, `SUBZY_TAKEOVER`
 
 ---
 

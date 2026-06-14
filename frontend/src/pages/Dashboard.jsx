@@ -7,7 +7,7 @@ import IpReconResult from '../components/results/IpReconResult';
 import SslTlsResult from '../components/results/SslTlsResult';
 import PortScanResult from '../components/results/PortScanResult';
 import SubdomainResult from '../components/results/SubdomainResult';
-import ResultCard from '../components/ResultCard';
+import GenericScanResult from '../components/results/GenericScanResult';
 
 export default function Dashboard() {
   const [searchParams] = useSearchParams();
@@ -17,7 +17,6 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
   const [scanType, setScanType] = useState('IP_RECON');
-  const [target, setTarget] = useState('');
   
   const [logs, setLogs] = useState([]);
   const { token } = useUser();
@@ -58,7 +57,7 @@ export default function Dashboard() {
                  setLogs(prev => [...prev, 'Scan is currently running...']);
                  setLoading(true);
              }
-         } catch (e) {
+         } catch {
              setLogs(prev => [...prev, '! Failed to fetch scan data.']);
          }
       }
@@ -107,8 +106,8 @@ export default function Dashboard() {
       case 'SSL/TLS':       return <SslTlsResult data={results} />;
       case 'IP_PORT_SCAN':  return <PortScanResult data={results} />;
       case 'SUBDOMAIN_ENUM': return <SubdomainResult data={results} />;
-      case 'IP_RECON':
-      default:              return <IpReconResult data={results} />;
+      case 'IP_RECON':      return <IpReconResult data={results} />;
+      default:              return <GenericScanResult data={results} scanType={scanType} />;
     }
   };
 
@@ -119,7 +118,7 @@ export default function Dashboard() {
           <h1 className="dashboard-title">Scan Results</h1>
           {scanId ? (
             <p className="dashboard-subtitle">
-              <span className="mono">{target || scanId}</span> — {scanType} Report
+              <span className="mono">{scanId}</span> — {scanType} Report
             </p>
           ) : (
             <p className="dashboard-subtitle">Navigate to the home page to start a scan</p>

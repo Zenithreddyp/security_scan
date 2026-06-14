@@ -7,6 +7,7 @@ import IpReconResult from '../components/results/IpReconResult';
 import SslTlsResult from '../components/results/SslTlsResult';
 import PortScanResult from '../components/results/PortScanResult';
 import SubdomainResult from '../components/results/SubdomainResult';
+import GenericScanResult from '../components/results/GenericScanResult';
 import { Zap } from 'lucide-react';
 
 const SCAN_LOGS_POOL = [
@@ -86,7 +87,7 @@ export default function LandingPage() {
       // Navigate dynamic to waiting dashboard
       navigate(`/dashboard?scanId=${data.scan.id}`);
       
-    } catch (err) {
+    } catch {
       clearInterval(progressInterval);
       setScanLogs(prev => [
         ...prev,
@@ -128,7 +129,7 @@ export default function LandingPage() {
             { domain: `blog.${config.target}`, active: true },
           ]
         });
-      } else {
+      } else if (config.type === 'IP_PORT_SCAN') {
         setResults({
           ports: [
             { port: 80, protocol: 'TCP', state: 'open', service: 'HTTP' },
@@ -137,6 +138,13 @@ export default function LandingPage() {
             { port: 8080, protocol: 'TCP', state: 'closed', service: 'HTTP-Proxy' },
           ],
           summary: { total: 4, open: 2, filtered: 1, closed: 1 },
+        });
+      } else {
+        setResults({
+          target: config.target,
+          scan_type: config.type,
+          findings: [],
+          note: 'Backend scan was not reachable, so no scanner output is available.',
         });
       }
     } finally {
@@ -155,7 +163,7 @@ export default function LandingPage() {
       case 'SSL/TLS': return <SslTlsResult data={results} />;
       case 'IP_PORT_SCAN': return <PortScanResult data={results} />;
       case 'SUBDOMAIN_ENUM': return <SubdomainResult data={results} />;
-      default: return <IpReconResult data={results} />;
+      default: return <GenericScanResult data={results} scanType={scanType} />;
     }
   };
 

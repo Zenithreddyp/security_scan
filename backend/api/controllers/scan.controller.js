@@ -8,6 +8,7 @@ import {
 import { findTargetByUserAndId } from "../../core/models/target.model.js";
 import { AddScantoQueue } from "../../core/services/scan.service.js";
 import { findOrCreateTarget } from "../../core/services/target.service.js";
+import { isScanAllowedForTarget, scanTypesForTarget } from "../../core/config/scanTypes.js";
 import net from "node:net";
 
 export async function initiateScan(req, res) {
@@ -15,7 +16,7 @@ export async function initiateScan(req, res) {
         const user_id = req.user.userId;
         console.log("hello ruinning");
 
-        const { target: body_target, scan_type, protocol, port_range } = req.body;
+        const { target: body_target, scan_type, ...scanOptions } = req.body;
 
         if (!body_target) {
             res.status(400).json({ message: "Target not provided" });
@@ -35,9 +36,9 @@ export async function initiateScan(req, res) {
         let target;
 
         if (net.isIP(body_target)) {
-            const allowedIpScans = ["IP_RECON", "IP_PORT_SCAN"];
+            const allowedIpScans = scanTypesForTarget("ip");
 
-            if (!allowedIpScans.includes(scan_type)) {
+            if (!isScanAllowedForTarget(scan_type, "ip")) {
                 res.status(400).json({
                     message: `Invalid scan type '${scan_type}' for an IP target. Allowed scans: ${allowedIpScans.join(",")}`,
                 });
@@ -48,9 +49,9 @@ export async function initiateScan(req, res) {
                 target_ip: body_target,
             });
         } else if (domainPattern.test(body_target)) {
-            const allowedDomainScans = ["SSL/TLS", "IP_PORT_SCAN", "SUBDOMAIN_ENUM"];
+            const allowedDomainScans = scanTypesForTarget("domain");
 
-            if (!allowedDomainScans.includes(scan_type)) {
+            if (!isScanAllowedForTarget(scan_type, "domain")) {
                 res.status(400).json({
                     message: `Invalid scan type '${scan_type}' for a Domain target. Allowed scans: ${allowedDomainScans.join(",")}`,
                 });
@@ -71,7 +72,7 @@ export async function initiateScan(req, res) {
         const scan = await createScan(target.id, scan_type);
 
         await AddScantoQueue({
-            scan: { id: scan.id, type: scan.scan_type, protocol: protocol, port_range: port_range },
+            scan: { id: scan.id, type: scan.scan_type, ...scanOptions },
             target: {
                 id: target.id,
                 url: target.target_url,

@@ -12,7 +12,24 @@ const TYPE_CONFIG = {
   IP_RECON: { cls: 'ip-recon', label: 'IP Recon', Icon: Globe },
   'SSL/TLS': { cls: 'ssl-tls', label: 'SSL/TLS', Icon: ShieldCheck },
   IP_PORT_SCAN: { cls: 'port-scan', label: 'Port Scan', Icon: Radio },
-  SUBDOMAIN_SCAN: { cls: 'subdomain-scan', label: 'Subdomains', Icon: Globe }
+  SUBDOMAIN_ENUM: { cls: 'subdomain-scan', label: 'Subdomains', Icon: Globe },
+  DNS_RECORDS: { cls: 'dns-records', label: 'DNS Records', Icon: Globe },
+  HTTP_HEADERS: { cls: 'http-headers', label: 'Headers', Icon: ShieldCheck },
+  CORS_AUDIT: { cls: 'cors-audit', label: 'CORS', Icon: ShieldCheck },
+  TECH_STACK: { cls: 'tech-stack', label: 'Tech Stack', Icon: Search },
+  DIRECTORY_DISCOVERY: { cls: 'directory-discovery', label: 'Directories', Icon: Search },
+  WELL_KNOWN_FILES: { cls: 'well-known-files', label: 'Well-Known', Icon: Info },
+  JS_SECRET_SCAN: { cls: 'js-secret-scan', label: 'JS Secrets', Icon: AlertTriangle },
+  SUBDOMAIN_TAKEOVER: { cls: 'takeover', label: 'Takeover', Icon: AlertTriangle },
+  NUCLEI_SCAN: { cls: 'nuclei', label: 'Nuclei', Icon: AlertOctagon },
+  HTTPX_PROBE: { cls: 'httpx', label: 'HTTPX', Icon: Search },
+  NAABU_SCAN: { cls: 'naabu', label: 'Naabu', Icon: Radio },
+  KATANA_CRAWL: { cls: 'katana', label: 'Katana', Icon: Search },
+  DNSX_LOOKUP: { cls: 'dnsx', label: 'DNSX', Icon: Globe },
+  FFUF_CONTENT_DISCOVERY: { cls: 'ffuf', label: 'FFUF', Icon: Search },
+  ARCHIVE_URLS: { cls: 'archive-urls', label: 'Archive URLs', Icon: Search },
+  WAF_DETECTION: { cls: 'waf', label: 'WAF', Icon: ShieldCheck },
+  SUBZY_TAKEOVER: { cls: 'subzy', label: 'Subzy', Icon: AlertTriangle }
 };
 
 const SEVERITY_COLORS = {

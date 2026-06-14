@@ -1,6 +1,25 @@
 import pika
 import os
 import json
+from handlers.advanced_handler import (
+    handle_archive_urls_scan,
+    handle_cors_audit_scan,
+    handle_directory_discovery_scan,
+    handle_dns_records_scan,
+    handle_dnsx_scan,
+    handle_ffuf_scan,
+    handle_http_headers_scan,
+    handle_httpx_probe_scan,
+    handle_js_secret_scan,
+    handle_katana_crawl_scan,
+    handle_naabu_scan,
+    handle_nuclei_scan,
+    handle_subdomain_takeover_scan,
+    handle_subzy_scan,
+    handle_tech_stack_scan,
+    handle_waf_detection_scan,
+    handle_well_known_files_scan,
+)
 from handlers.ssl_handler import handle_ssl_scan
 from handlers.ip_handler import handle_ip_ssl_scan, handle_ip_port_scan
 from handlers.domain_handler import handle_subdomain_scan
@@ -12,6 +31,23 @@ SCAN_ROUTER = {
     "IP_RECON": handle_ip_ssl_scan,
     "IP_PORT_SCAN": handle_ip_port_scan,
     "SUBDOMAIN_ENUM": handle_subdomain_scan,
+    "DNS_RECORDS": handle_dns_records_scan,
+    "HTTP_HEADERS": handle_http_headers_scan,
+    "CORS_AUDIT": handle_cors_audit_scan,
+    "TECH_STACK": handle_tech_stack_scan,
+    "DIRECTORY_DISCOVERY": handle_directory_discovery_scan,
+    "WELL_KNOWN_FILES": handle_well_known_files_scan,
+    "JS_SECRET_SCAN": handle_js_secret_scan,
+    "SUBDOMAIN_TAKEOVER": handle_subdomain_takeover_scan,
+    "NUCLEI_SCAN": handle_nuclei_scan,
+    "HTTPX_PROBE": handle_httpx_probe_scan,
+    "NAABU_SCAN": handle_naabu_scan,
+    "KATANA_CRAWL": handle_katana_crawl_scan,
+    "DNSX_LOOKUP": handle_dnsx_scan,
+    "FFUF_CONTENT_DISCOVERY": handle_ffuf_scan,
+    "ARCHIVE_URLS": handle_archive_urls_scan,
+    "WAF_DETECTION": handle_waf_detection_scan,
+    "SUBZY_TAKEOVER": handle_subzy_scan,
     # "FULL_DOMAIN": handle_full_domain_flow,
     # "FULL_IP": handle_full_ip_flow,
 }

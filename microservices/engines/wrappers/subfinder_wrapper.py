@@ -1,6 +1,7 @@
 import subprocess
 import socket
 import requests
+from core.scan_utils import get_hostname
 
 
 import shutil
@@ -56,7 +57,8 @@ class SubfinderWrapper:
             return False
 
     def run(self, target, scan_level="basic"):
-        cmd = ["-d", target]
+        domain = get_hostname(target)
+        cmd = [self.path, "-d", domain, "-silent"]
         result = subprocess.run(cmd, capture_output=True, text=True)
         # print(result)
         return self.parse_output(result)

@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useUser } from '../context/UserContext';
 import { Link } from 'react-router-dom';
 import { Settings2, Lock, Play, Loader2 } from 'lucide-react';
+import { SCAN_REQUIRES_AUTH, SCAN_TYPE_MAP, SCAN_TYPES } from '../config/scanTypes';
 
-const SCAN_TYPE_MAP = {
-  IP_RECON: 'ip-recon',
-  'SSL/TLS': 'ssl-check',
-  IP_PORT_SCAN: 'port-scan',
-  SUBDOMAIN_ENUM: 'subdomain-enum',
-};
+const GROUPED_SCAN_TYPES = SCAN_TYPES.reduce((groups, scan) => {
+  if (!groups[scan.category]) groups[scan.category] = [];
+  groups[scan.category].push(scan);
+  return groups;
+}, {});
 
 export default function ScanControls({ onCommandChange, onSubmit, isScanning }) {
   const { user } = useUser();
@@ -17,8 +17,8 @@ export default function ScanControls({ onCommandChange, onSubmit, isScanning }) 
   const [ports, setPorts] = useState('');
   const [protocol, setProtocol] = useState('TCP');
 
-  const showAdvanced = scanType === 'IP_PORT_SCAN' || (user && scanType === 'IP_PORT_SCAN');
-  const needsAuth = (scanType === 'IP_PORT_SCAN' || scanType === 'SUBDOMAIN_ENUM') && !user;
+  const needsAuth = Boolean(SCAN_REQUIRES_AUTH[scanType] && !user);
+  const selectedScan = SCAN_TYPES.find((scan) => scan.value === scanType);
 
   // Build CLI command string reactively
   useEffect(() => {
@@ -63,10 +63,13 @@ export default function ScanControls({ onCommandChange, onSubmit, isScanning }) 
           value={scanType}
           onChange={(e) => setScanType(e.target.value)}
         >
-          <option value="IP_RECON">IP Reconnaissance</option>
-          <option value="SSL/TLS">SSL / TLS Analysis</option>
-          <option value="IP_PORT_SCAN">Port Scanning</option>
-          <option value="SUBDOMAIN_ENUM">Subdomain Enumeration</option>
+          {Object.entries(GROUPED_SCAN_TYPES).map(([category, scans]) => (
+            <optgroup key={category} label={category}>
+              {scans.map((scan) => (
+                <option key={scan.value} value={scan.value}>{scan.label}</option>
+              ))}
+            </optgroup>
+          ))}
         </select>
       </div>
 
@@ -118,13 +121,13 @@ export default function ScanControls({ onCommandChange, onSubmit, isScanning }) 
         </div>
       )}
 
-      {/* Subdomain Enum Auth Gate */}
-      {scanType === 'SUBDOMAIN_ENUM' && needsAuth && (
+      {/* Auth Gate */}
+      {scanType !== 'IP_PORT_SCAN' && needsAuth && (
         <div className="auth-gate" style={{ height: '80px', marginTop: '1rem', border: '1px solid var(--border-color)', borderRadius: 'var(--radius)' }}>
           <div className="auth-gate-overlay" style={{ borderRadius: 'var(--radius)' }}>
             <Lock size={20} />
-            <span className="auth-gate-text">Sign in to unlock Subdomain Enumeration</span>
-            <Link to="/auth" className="auth-gate-link">Sign In →</Link>
+            <span className="auth-gate-text">Sign in to unlock {selectedScan?.label || 'this scan'}</span>
+            <Link to="/auth" className="auth-gate-link">Sign In -&gt;</Link>
           </div>
         </div>
       )}
